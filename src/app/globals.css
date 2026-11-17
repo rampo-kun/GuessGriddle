@@ -1,26 +1,21 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* GuessGriddle — X-Insights vintage broadcast design system */
+:root{--background:#f5e8cc;--foreground:#24211d;--cream:#f5e8cc;--paper:#fff7e8;--paper-deep:#ead9b8;--tomato:#c83d2d;--tomato-dark:#a82e22;--mustard:#e9b949;--charcoal:#24211d;--navy:#303b50;--muted:#766e61;--line:rgba(36,33,29,.16)}
+@theme inline{--color-background:var(--background);--color-foreground:var(--foreground);--font-sans:var(--font-geist-sans);--font-mono:var(--font-geist-mono)}
+*{box-sizing:border-box}html{min-height:100%;background:var(--cream)}
+body{min-height:100%;margin:0;color:var(--charcoal);background:radial-gradient(ellipse at 12% 8%,rgba(233,185,73,.18),transparent 30%),radial-gradient(ellipse at 90% 85%,rgba(200,61,45,.09),transparent 32%),var(--cream);font-family:Arial,Helvetica,sans-serif;background-attachment:fixed}
+::selection{background:var(--mustard);color:var(--charcoal)}
+/* Warm-paper surfaces replace the starter dark SaaS palette. */
+.bg-slate-950{background-color:var(--cream)!important;color:var(--charcoal)!important}.bg-slate-900{background-color:var(--paper)!important}.bg-slate-800{background-color:var(--paper-deep)!important}.bg-slate-900\/90{background-color:rgba(255,247,232,.94)!important}
+.bg-slate-950.text-white,.bg-slate-900 .text-white,.bg-slate-800 .text-white,.text-slate-100,.text-slate-200{color:var(--charcoal)!important}.text-slate-300{color:#514a40!important}.text-slate-400,.text-slate-500{color:var(--muted)!important}.border-slate-700,.border-slate-800{border-color:var(--line)!important}
+/* Indigo and purple become broadcast tomato red. */
+.bg-indigo-600,.bg-indigo-700,.bg-indigo-800{background-color:var(--tomato)!important}.bg-indigo-600\/30,.bg-indigo-700\/30,.bg-indigo-950,.bg-indigo-950\/90,.bg-indigo-950\/80,.bg-indigo-950\/70{background-color:rgba(200,61,45,.10)!important}.text-indigo-300,.text-indigo-200,.text-indigo-400,.text-purple-300,.text-purple-400{color:var(--tomato)!important}.border-indigo-400,.border-indigo-500,.border-indigo-500\/30,.border-indigo-400\/40,.border-purple-400,.border-purple-500\/30{border-color:rgba(200,61,45,.38)!important}.from-indigo-700{--tw-gradient-from:var(--tomato) var(--tw-gradient-from-position)!important}.to-purple-700{--tw-gradient-to:var(--tomato-dark) var(--tw-gradient-to-position)!important}.from-purple-900\/60{--tw-gradient-from:rgba(200,61,45,.12) var(--tw-gradient-from-position)!important}
+/* Preserve semantic Wordle colours. */
+.bg-emerald-500{background-color:#28784b!important}.text-emerald-400,.text-emerald-300{color:#28784b!important}.border-emerald-500,.border-emerald-500\/40{border-color:rgba(40,120,75,.45)!important}.bg-emerald-950,.bg-emerald-950\/80{background-color:rgba(40,120,75,.10)!important}.text-amber-400,.text-amber-300{color:#9b6a08!important}.bg-amber-500{background-color:var(--mustard)!important}.text-slate-950{color:var(--charcoal)!important}
+.rounded-2xl,.rounded-3xl{border-radius:18px!important}.shadow-2xl,.shadow-xl,.shadow-lg{box-shadow:0 12px 30px rgba(58,43,23,.10),0 2px 5px rgba(58,43,23,.07)!important}
+button,a{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,color .16s ease}button{cursor:pointer}button:hover:not(:disabled),a:hover{transform:translateY(-1px)}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(200,61,45,.38);outline-offset:3px}input,textarea,select{color:var(--charcoal)}hr{border-color:var(--line)}
+.uppercase.tracking-widest,.uppercase.tracking-wider{letter-spacing:.12em}
+/* Subtle paper grain without external image assets. */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}

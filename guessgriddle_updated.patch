@@ -1,0 +1,212 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index a2dc41e..a8d2107 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1,26 +1,21 @@
+ @import "tailwindcss";
+ 
+-:root {
+-  --background: #ffffff;
+-  --foreground: #171717;
+-}
+-
+-@theme inline {
+-  --color-background: var(--background);
+-  --color-foreground: var(--foreground);
+-  --font-sans: var(--font-geist-sans);
+-  --font-mono: var(--font-geist-mono);
+-}
+-
+-@media (prefers-color-scheme: dark) {
+-  :root {
+-    --background: #0a0a0a;
+-    --foreground: #ededed;
+-  }
+-}
+-
+-body {
+-  background: var(--background);
+-  color: var(--foreground);
+-  font-family: Arial, Helvetica, sans-serif;
+-}
++/* GuessGriddle — X-Insights vintage broadcast design system */
++:root{--background:#f5e8cc;--foreground:#24211d;--cream:#f5e8cc;--paper:#fff7e8;--paper-deep:#ead9b8;--tomato:#c83d2d;--tomato-dark:#a82e22;--mustard:#e9b949;--charcoal:#24211d;--navy:#303b50;--muted:#766e61;--line:rgba(36,33,29,.16)}
++@theme inline{--color-background:var(--background);--color-foreground:var(--foreground);--font-sans:var(--font-geist-sans);--font-mono:var(--font-geist-mono)}
++*{box-sizing:border-box}html{min-height:100%;background:var(--cream)}
++body{min-height:100%;margin:0;color:var(--charcoal);background:radial-gradient(ellipse at 12% 8%,rgba(233,185,73,.18),transparent 30%),radial-gradient(ellipse at 90% 85%,rgba(200,61,45,.09),transparent 32%),var(--cream);font-family:Arial,Helvetica,sans-serif;background-attachment:fixed}
++::selection{background:var(--mustard);color:var(--charcoal)}
++/* Warm-paper surfaces replace the starter dark SaaS palette. */
++.bg-slate-950{background-color:var(--cream)!important;color:var(--charcoal)!important}.bg-slate-900{background-color:var(--paper)!important}.bg-slate-800{background-color:var(--paper-deep)!important}.bg-slate-900\/90{background-color:rgba(255,247,232,.94)!important}
++.bg-slate-950.text-white,.bg-slate-900 .text-white,.bg-slate-800 .text-white,.text-slate-100,.text-slate-200{color:var(--charcoal)!important}.text-slate-300{color:#514a40!important}.text-slate-400,.text-slate-500{color:var(--muted)!important}.border-slate-700,.border-slate-800{border-color:var(--line)!important}
++/* Indigo and purple become broadcast tomato red. */
++.bg-indigo-600,.bg-indigo-700,.bg-indigo-800{background-color:var(--tomato)!important}.bg-indigo-600\/30,.bg-indigo-700\/30,.bg-indigo-950,.bg-indigo-950\/90,.bg-indigo-950\/80,.bg-indigo-950\/70{background-color:rgba(200,61,45,.10)!important}.text-indigo-300,.text-indigo-200,.text-indigo-400,.text-purple-300,.text-purple-400{color:var(--tomato)!important}.border-indigo-400,.border-indigo-500,.border-indigo-500\/30,.border-indigo-400\/40,.border-purple-400,.border-purple-500\/30{border-color:rgba(200,61,45,.38)!important}.from-indigo-700{--tw-gradient-from:var(--tomato) var(--tw-gradient-from-position)!important}.to-purple-700{--tw-gradient-to:var(--tomato-dark) var(--tw-gradient-to-position)!important}.from-purple-900\/60{--tw-gradient-from:rgba(200,61,45,.12) var(--tw-gradient-from-position)!important}
++/* Preserve semantic Wordle colours. */
++.bg-emerald-500{background-color:#28784b!important}.text-emerald-400,.text-emerald-300{color:#28784b!important}.border-emerald-500,.border-emerald-500\/40{border-color:rgba(40,120,75,.45)!important}.bg-emerald-950,.bg-emerald-950\/80{background-color:rgba(40,120,75,.10)!important}.text-amber-400,.text-amber-300{color:#9b6a08!important}.bg-amber-500{background-color:var(--mustard)!important}.text-slate-950{color:var(--charcoal)!important}
++.rounded-2xl,.rounded-3xl{border-radius:18px!important}.shadow-2xl,.shadow-xl,.shadow-lg{box-shadow:0 12px 30px rgba(58,43,23,.10),0 2px 5px rgba(58,43,23,.07)!important}
++button,a{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,color .16s ease}button{cursor:pointer}button:hover:not(:disabled),a:hover{transform:translateY(-1px)}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(200,61,45,.38);outline-offset:3px}input,textarea,select{color:var(--charcoal)}hr{border-color:var(--line)}
++.uppercase.tracking-widest,.uppercase.tracking-wider{letter-spacing:.12em}
++/* Subtle paper grain without external image assets. */
++body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");mix-blend-mode:multiply}
++@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 9852c15..f92f82b 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -2,27 +2,17 @@ import type { Metadata } from "next";
+ import { Geist, Geist_Mono } from "next/font/google";
+ import "./globals.css";
+ 
+-const geistSans = Geist({
+-  variable: "--font-geist-sans",
+-  subsets: ["latin"],
+-});
+-
+-const geistMono = Geist_Mono({
+-  variable: "--font-geist-mono",
+-  subsets: ["latin"],
+-});
++const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
++const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+ 
+ export const metadata: Metadata = {
+-  title: "Create Next App",
+-  description: "Generated by create next app",
++  title: "GuessGriddle | X-Insights Game Show",
++  description: "The X-Insights interactive game show — quiz, guesstimates, Wordle and wild business pitches.",
+ };
+ 
+-export default function RootLayout({ children }: LayoutProps<"/">) {
++export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+   return (
+-    <html
+-      lang="en"
+-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+-    >
++    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+       <body className="min-h-full flex flex-col">{children}</body>
+     </html>
+   );
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index bd3ff06..2daf663 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,27 +1,38 @@
+-import Link from 'next/link';
++import Link from "next/link";
++import { ArrowUpRight, MonitorPlay, SlidersHorizontal, Sparkles } from "lucide-react";
+ 
+ export default function HomePage() {
+   return (
+-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-8 text-center">
+-      <h1 className="text-5xl font-black mb-4">GuessGriddle • X-Insights</h1>
+-      <p className="text-slate-400 mb-8 max-w-md">
+-        Open the Smartboard Display in a window dragged to the projector, and keep the
+-        Admin Vault on your laptop screen.
+-      </p>
+-      <div className="flex gap-4">
+-        <Link
+-          href="/projector"
+-          className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-xl font-bold text-lg"
+-        >
+-          Launch Smartboard Display
+-        </Link>
+-        <Link
+-          href="/x-admin-vault"
+-          className="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-6 py-3 rounded-xl font-bold text-lg"
+-        >
+-          Open Admin Vault
+-        </Link>
+-      </div>
+-    </div>
++    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12">
++      <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-12 h-72 w-72 rounded-full border-[32px] border-[#e9b949]/25" />
++      <div aria-hidden="true" className="pointer-events-none absolute -right-20 bottom-0 h-96 w-96 rounded-full border-[44px] border-[#c83d2d]/10" />
++      <section className="relative w-full max-w-5xl overflow-hidden rounded-[32px] border border-[#24211d]/15 bg-[#fff7e8] shadow-[0_24px_80px_rgba(58,43,23,.16)]">
++        <div className="flex items-center justify-between border-b border-[#24211d]/10 bg-[#303b50] px-6 py-4 text-[#fff7e8] sm:px-10">
++          <div className="flex items-center gap-3"><span className="h-3 w-3 rounded-full bg-[#c83d2d]"/><span className="h-3 w-3 rounded-full bg-[#e9b949]"/><span className="h-3 w-3 rounded-full bg-[#78a77a]"/><span className="ml-2 text-xs font-bold uppercase tracking-[.24em] text-[#f5e8cc]/75">X-Insights Broadcast Network</span></div>
++          <span className="hidden text-xs font-bold uppercase tracking-[.18em] text-[#f5e8cc]/70 sm:block">Live game control</span>
++        </div>
++        <div className="grid gap-10 px-7 py-12 sm:px-12 sm:py-16 md:grid-cols-[1.15fr_.85fr] md:items-center">
++          <div>
++            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#c83d2d]/25 bg-[#c83d2d]/8 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-[#c83d2d]"><Sparkles size={15}/> XIME Bangalore presents</div>
++            <p className="mb-2 text-sm font-black uppercase tracking-[.28em] text-[#766e61]">The not-so-serious competition</p>
++            <h1 className="text-6xl font-black leading-[.88] tracking-[-.065em] text-[#24211d] sm:text-7xl lg:text-8xl">GUESS<span className="text-[#c83d2d]">GRIDDLE</span><span className="mt-3 block text-2xl font-black tracking-[-.02em] text-[#9b6a08] sm:text-3xl">Think fast. Guess wildly. Pitch badly.</span></h1>
++            <p className="mt-7 max-w-xl text-base leading-7 text-[#62594d] sm:text-lg">Your control room for the X-Insights game show. Run the quiz, drop a surprise Wordle, auction ridiculous words and crown the best business pitch.</p>
++            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
++              <Link href="/projector" className="group inline-flex items-center justify-center gap-3 rounded-xl bg-[#c83d2d] px-6 py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-[#c83d2d]/20 hover:bg-[#a82e22]"><MonitorPlay size={18}/> Launch projector <ArrowUpRight size={17} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"/></Link>
++              <Link href="/x-admin-vault" className="inline-flex items-center justify-center gap-3 rounded-xl border-2 border-[#303b50] px-6 py-4 text-sm font-black uppercase tracking-wider text-[#303b50] hover:bg-[#303b50] hover:text-[#fff7e8]"><SlidersHorizontal size={18}/> Open host dashboard</Link>
++            </div>
++          </div>
++          <div className="relative mx-auto w-full max-w-sm">
++            <div className="rounded-[28px] border-[8px] border-[#303b50] bg-[#24211d] p-3 shadow-[0_24px_45px_rgba(36,33,29,.24)]"><div className="rounded-[17px] bg-[#f5e8cc] p-5">
++              <div className="mb-5 flex items-center justify-between"><span className="text-[10px] font-black uppercase tracking-[.2em] text-[#766e61]">Tonight's scoreboard</span><span className="rounded-full bg-[#c83d2d] px-2 py-1 text-[9px] font-black tracking-widest text-white">ON AIR</span></div>
++              <div className="grid grid-cols-3 gap-2">{["QUIZ","GUESS","PITCH"].map((item,i)=><div key={item} className={`rounded-xl p-3 text-center ${i===1?"bg-[#e9b949]":"bg-[#303b50] text-[#fff7e8]"}`}><div className={`text-[9px] font-black tracking-widest ${i===1?"text-[#24211d]/65":"text-[#fff7e8]/60"}`}>ROUND 0{i+1}</div><div className={`mt-2 text-xs font-black ${i===1?"text-[#24211d]":"text-[#fff7e8]"}`}>{item}</div></div>)}</div>
++              <div className="mt-5 rounded-xl border-2 border-dashed border-[#c83d2d]/40 p-4 text-center"><div className="text-4xl font-black tracking-[.16em] text-[#c83d2d]">???</div><div className="mt-2 text-[10px] font-black uppercase tracking-[.2em] text-[#766e61]">Your team. Your moment.</div></div>
++            </div></div>
++            <div className="mx-auto mt-3 h-5 w-28 rounded-b-2xl bg-[#303b50]"/><div className="mx-auto h-2 w-44 rounded-full bg-[#24211d]/20"/><div className="absolute -right-3 -top-5 rotate-6 rounded-lg bg-[#e9b949] px-4 py-2 text-xs font-black uppercase tracking-widest text-[#24211d] shadow-lg">Let's play!</div>
++          </div>
++        </div>
++        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#24211d]/10 bg-[#f0dfbf] px-7 py-4 text-[10px] font-black uppercase tracking-[.2em] text-[#766e61] sm:px-10"><span>One projector. Many questionable decisions.</span><span>Made for X-Insights · XIME Bangalore</span></div>
++      </section>
++    </main>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/projector/page.tsx b/src/app/projector/page.tsx
+index d5d82ee..ff1a019 100644
+--- a/src/app/projector/page.tsx
++++ b/src/app/projector/page.tsx
+@@ -10,10 +10,7 @@ import Round2Market from '@/components/projector/Round2Market';
+ 
+ export default function ProjectorPage() {
+     const { activeView, teams, hydrateFromStorage } = useGameStore();
+-
+-    useEffect(() => {
+-        hydrateFromStorage();
+-    }, [hydrateFromStorage]);
++    useEffect(() => { hydrateFromStorage(); }, [hydrateFromStorage]);
+ 
+     if (activeView === 'JEOPARDY') return <JeopardyView />;
+     if (activeView === 'WORDLE_SELECT') return <WordleSelector />;
+@@ -22,29 +19,15 @@ export default function ProjectorPage() {
+     if (activeView === 'ROUND2_MARKET') return <Round2Market isFinale={false} />;
+     if (activeView === 'WIKIRACE_FINALE') return <Round2Market isFinale={true} />;
+ 
+-    // Default Lobby Screen
+     return (
+-        <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-10 text-center">
+-            <div className="text-sm font-extrabold uppercase tracking-[0.3em] text-indigo-400 mb-4">
+-                X-Insights Presents
+-            </div>
+-            <h1 className="text-7xl md:text-8xl font-black tracking-tight bg-gradient-to-r from-amber-300 via-indigo-400 to-emerald-400 bg-clip-text text-transparent mb-8">
+-                GUESSGRIDDLE
+-            </h1>
+-            <p className="text-2xl text-slate-400 max-w-2xl mb-12">
+-                Guesstimates • Wordle • Word Marketplace • Wikipedia Race
+-            </p>
+-
+-            <div className="flex flex-wrap justify-center gap-4">
+-                {teams.map((t) => (
+-                    <div
+-                        key={t.id}
+-                        className="bg-slate-900 border border-slate-700 px-6 py-3 rounded-2xl text-xl font-bold"
+-                    >
+-                        {t.name}
+-                    </div>
+-                ))}
+-            </div>
+-        </div>
++        <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#f5e8cc] px-8 py-12 text-center text-[#24211d]">
++            <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-0 h-80 w-80 rounded-full border-[40px] border-[#e9b949]/25" />
++            <div aria-hidden="true" className="pointer-events-none absolute -right-28 bottom-0 h-96 w-96 rounded-full border-[48px] border-[#c83d2d]/10" />
++            <div className="relative mb-8 inline-flex items-center gap-3 rounded-full border border-[#c83d2d]/30 bg-[#fff7e8] px-5 py-2 text-sm font-black uppercase tracking-[.25em] text-[#c83d2d] shadow-sm"><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#c83d2d]"/>X-Insights Presents</div>
++            <h1 className="relative text-7xl font-black leading-[.88] tracking-[-.07em] text-[#24211d] md:text-9xl">GUESS<span className="text-[#c83d2d]">GRIDDLE</span></h1>
++            <p className="relative mt-7 text-xl font-bold text-[#766e61] md:text-3xl">Guesstimates <span className="text-[#c83d2d]">·</span> Wordle <span className="text-[#c83d2d]">·</span> Word Market <span className="text-[#c83d2d]">·</span> Wild Pitches</p>
++            <div className="relative mt-14 flex max-w-5xl flex-wrap justify-center gap-4">{teams.map((t)=><div key={t.id} className="rounded-2xl border-2 border-[#303b50]/15 bg-[#fff7e8] px-7 py-4 text-xl font-black text-[#303b50] shadow-[0_8px_18px_rgba(58,43,23,.08)]">{t.name}</div>)}</div>
++            <div className="relative mt-16 flex items-center gap-3 text-xs font-black uppercase tracking-[.28em] text-[#9b6a08]"><span className="h-px w-12 bg-[#e9b949]"/>Get ready to play<span className="h-px w-12 bg-[#e9b949]"/></div>
++        </main>
+     );
+-}
+\ No newline at end of file
++}
