@@ -58,8 +58,8 @@ export default function JeopardyView() {
                         .sort((a, b) => a.points - b.points);
 
                     return (
-                        <div key={cat} className="flex flex-col gap-4">
-                            <div className="bg-gradient-to-r from-indigo-700 to-purple-700 p-5 rounded-2xl text-center font-black text-xl tracking-wide uppercase shadow-lg border border-indigo-400/30">
+                        <div key={cat} className="flex min-w-0 flex-col gap-4">
+                            <div className="h-24 min-h-24 flex items-center justify-center overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-2 rounded-2xl text-center font-black text-base md:text-lg leading-tight tracking-wide uppercase shadow-lg border border-indigo-400/30 break-words [overflow-wrap:anywhere]">
                                 {cat}
                             </div>
 

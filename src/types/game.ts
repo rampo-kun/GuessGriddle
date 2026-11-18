@@ -40,11 +40,11 @@ export interface WordleGuess {
 export interface WordlePuzzle {
     id: string;
     number: number;
-    targetWord: string; // 5-letter uppercase
+    targetWord: string; // Uppercase word; length is determined per puzzle
     definition: string;
     isCompleted: boolean;
     guesses: WordleGuess[];
-    discoveredGreenIndices: number[]; // Indices 0-4 already found green
+    discoveredGreenIndices: number[]; // Zero-based positions already found green
     discoveredLetters: string[];      // Unique letters already discovered (yellow or green)
     startingTeamIndex: number;
 }

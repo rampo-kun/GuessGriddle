@@ -9,6 +9,7 @@ export default function WordleBoard() {
     if (!puzzle) return null;
 
     const wordLen = puzzle.targetWord.length;
+    const cellSize = wordLen >= 12 ? 'w-8 h-8 md:w-10 md:h-10 text-xl md:text-2xl' : wordLen >= 9 ? 'w-10 h-10 md:w-12 md:h-12 text-2xl md:text-3xl' : 'w-12 h-12 md:w-16 md:h-16 text-3xl md:text-4xl';
     const activeTeamIdx =
         (puzzle.startingTeamIndex + puzzle.guesses.length) % Math.max(1, teams.length);
     const activeTeam = teams[activeTeamIdx];
@@ -59,19 +60,20 @@ export default function WordleBoard() {
                 })}
             </div>
 
-            {/* 6-Row Wordle Grid */}
-            <div className="flex flex-col gap-3 my-2">
+            {/* Six attempts; each puzzle gets exactly as many columns as its answer. */}
+            <div className="w-full max-w-[96vw] overflow-x-auto my-2">
+              <div className="mx-auto flex w-max min-w-fit flex-col gap-2 md:gap-3">
                 {Array.from({ length: 6 }).map((_, rowIdx) => {
                     const guessObj = puzzle.guesses[rowIdx];
                     const guessTeam = teams.find((t) => t.id === guessObj?.teamId);
 
                     return (
-                        <div key={rowIdx} className="flex items-center gap-4">
-                            <div className="w-36 text-right text-sm font-bold text-slate-400 truncate">
+                        <div key={rowIdx} className="flex items-center gap-2 md:gap-4">
+                            <div className="w-20 md:w-36 shrink-0 text-right text-xs md:text-sm font-bold text-slate-400 truncate">
                                 {guessTeam ? guessTeam.name : `Row ${rowIdx + 1}`}
                             </div>
 
-                            <div className="flex gap-2.5">
+                            <div className="flex gap-1 md:gap-2">
                                 {Array.from({ length: wordLen }).map((__, colIdx) => {
                                     const char = guessObj?.word[colIdx] || '';
                                     const status = guessObj?.statuses[colIdx];
@@ -87,7 +89,7 @@ export default function WordleBoard() {
                                     return (
                                         <div
                                             key={colIdx}
-                                            className={`w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 flex items-center justify-center text-4xl font-black uppercase transition-all ${bgClass}`}
+                                            className={`${cellSize} shrink-0 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black uppercase transition-all ${bgClass}`}
                                         >
                                             {char}
                                         </div>
@@ -95,7 +97,7 @@ export default function WordleBoard() {
                                 })}
                             </div>
 
-                            <div className="w-28 text-left">
+                            <div className="w-20 md:w-28 shrink-0 text-left">
                                 {guessObj && (
                                     <span className="bg-indigo-600/30 border border-indigo-400/40 text-indigo-300 px-3 py-1 rounded-lg text-sm font-bold">
                                         +{guessObj.pointsEarned} pts
@@ -105,6 +107,7 @@ export default function WordleBoard() {
                         </div>
                     );
                 })}
+              </div>
             </div>
 
             {/* Reveal Banner when completed */}

@@ -1,0 +1,201 @@
+diff --git a/src/components/projector/JeopardyView.tsx b/src/components/projector/JeopardyView.tsx
+index 244b8df..5368bcb 100644
+--- a/src/components/projector/JeopardyView.tsx
++++ b/src/components/projector/JeopardyView.tsx
+@@ -58,8 +58,8 @@ export default function JeopardyView() {
+                         .sort((a, b) => a.points - b.points);
+ 
+                     return (
+-                        <div key={cat} className="flex flex-col gap-4">
+-                            <div className="bg-gradient-to-r from-indigo-700 to-purple-700 p-5 rounded-2xl text-center font-black text-xl tracking-wide uppercase shadow-lg border border-indigo-400/30">
++                        <div key={cat} className="flex min-w-0 flex-col gap-4">
++                            <div className="h-24 min-h-24 flex items-center justify-center overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-2 rounded-2xl text-center font-black text-base md:text-lg leading-tight tracking-wide uppercase shadow-lg border border-indigo-400/30 break-words [overflow-wrap:anywhere]">
+                                 {cat}
+                             </div>
+ 
+diff --git a/src/components/projector/WordleBoard.tsx b/src/components/projector/WordleBoard.tsx
+index aa63afc..b6c650d 100644
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -9,6 +9,7 @@ export default function WordleBoard() {
+     if (!puzzle) return null;
+ 
+     const wordLen = puzzle.targetWord.length;
++    const cellSize = wordLen >= 12 ? 'w-8 h-8 md:w-10 md:h-10 text-xl md:text-2xl' : wordLen >= 9 ? 'w-10 h-10 md:w-12 md:h-12 text-2xl md:text-3xl' : 'w-12 h-12 md:w-16 md:h-16 text-3xl md:text-4xl';
+     const activeTeamIdx =
+         (puzzle.startingTeamIndex + puzzle.guesses.length) % Math.max(1, teams.length);
+     const activeTeam = teams[activeTeamIdx];
+@@ -59,19 +60,20 @@ export default function WordleBoard() {
+                 })}
+             </div>
+ 
+-            {/* 6-Row Wordle Grid */}
+-            <div className="flex flex-col gap-3 my-2">
++            {/* Six attempts; each puzzle gets exactly as many columns as its answer. */}
++            <div className="w-full max-w-[96vw] overflow-x-auto my-2">
++              <div className="mx-auto flex w-max min-w-fit flex-col gap-2 md:gap-3">
+                 {Array.from({ length: 6 }).map((_, rowIdx) => {
+                     const guessObj = puzzle.guesses[rowIdx];
+                     const guessTeam = teams.find((t) => t.id === guessObj?.teamId);
+ 
+                     return (
+-                        <div key={rowIdx} className="flex items-center gap-4">
+-                            <div className="w-36 text-right text-sm font-bold text-slate-400 truncate">
++                        <div key={rowIdx} className="flex items-center gap-2 md:gap-4">
++                            <div className="w-20 md:w-36 shrink-0 text-right text-xs md:text-sm font-bold text-slate-400 truncate">
+                                 {guessTeam ? guessTeam.name : `Row ${rowIdx + 1}`}
+                             </div>
+ 
+-                            <div className="flex gap-2.5">
++                            <div className="flex gap-1 md:gap-2">
+                                 {Array.from({ length: wordLen }).map((__, colIdx) => {
+                                     const char = guessObj?.word[colIdx] || '';
+                                     const status = guessObj?.statuses[colIdx];
+@@ -87,7 +89,7 @@ export default function WordleBoard() {
+                                     return (
+                                         <div
+                                             key={colIdx}
+-                                            className={`w-16 h-16 md:w-20 md:h-20 rounded-xl border-2 flex items-center justify-center text-4xl font-black uppercase transition-all ${bgClass}`}
++                                            className={`${cellSize} shrink-0 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black uppercase transition-all ${bgClass}`}
+                                         >
+                                             {char}
+                                         </div>
+@@ -95,7 +97,7 @@ export default function WordleBoard() {
+                                 })}
+                             </div>
+ 
+-                            <div className="w-28 text-left">
++                            <div className="w-20 md:w-28 shrink-0 text-left">
+                                 {guessObj && (
+                                     <span className="bg-indigo-600/30 border border-indigo-400/40 text-indigo-300 px-3 py-1 rounded-lg text-sm font-bold">
+                                         +{guessObj.pointsEarned} pts
+@@ -105,6 +107,7 @@ export default function WordleBoard() {
+                         </div>
+                     );
+                 })}
++              </div>
+             </div>
+ 
+             {/* Reveal Banner when completed */}
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index 0ab0206..761ec0f 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -12,7 +12,7 @@ import {
+ import { evaluateWordleGuess } from '@/utils/wordleLogic';
+ import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
+ 
+-const STORAGE_KEY = 'guessgriddle_xinsights_state_v3';
++const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
+ const CHANNEL_NAME = 'guessgriddle_sync_channel';
+ 
+ const DEFAULT_CONFIG: GameConfig = {
+@@ -81,39 +81,22 @@ const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
+ ];
+ 
+ const SAMPLE_WORDLES: WordlePuzzle[] = [
+-    {
+-        id: 'w1',
+-        number: 1,
+-        targetWord: 'PIVOT',
+-        definition: 'A strategic shift in business direction without changing the core vision.',
+-        isCompleted: false,
+-        guesses: [],
+-        discoveredGreenIndices: [],
+-        discoveredLetters: [],
+-        startingTeamIndex: 0,
+-    },
+-    {
+-        id: 'w2',
+-        number: 2,
+-        targetWord: 'CHURN',
+-        definition: 'The percentage of customers who stop using a company’s product over a period.',
+-        isCompleted: false,
+-        guesses: [],
+-        discoveredGreenIndices: [],
+-        discoveredLetters: [],
+-        startingTeamIndex: 1,
+-    },
+-    {
+-        id: 'w3',
+-        number: 3,
+-        targetWord: 'PROXY',
+-        definition: 'A variable used to stand in for another difficult-to-measure metric in analytics.',
+-        isCompleted: false,
+-        guesses: [],
+-        discoveredGreenIndices: [],
+-        discoveredLetters: [],
+-        startingTeamIndex: 2,
+-    },
++    { id: 'w1', number: 1, targetWord: 'TOKEN', definition: 'A basic unit of text processed by a language model.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w2', number: 2, targetWord: 'LOGIC', definition: 'The reasoning process that helps a computer make decisions.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
++    { id: 'w3', number: 3, targetWord: 'TREND', definition: 'A pattern showing how a metric changes over time.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
++    { id: 'w4', number: 4, targetWord: 'PIVOT', definition: 'An Excel feature that summarizes and rearranges large datasets dynamically.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w5', number: 5, targetWord: 'BAYES', definition: 'The theorem used to update probabilities when new evidence appears.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
++    { id: 'w6', number: 6, targetWord: 'EMBED', definition: 'The process of representing data as numerical vectors.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
++    { id: 'w7', number: 7, targetWord: 'QUERY', definition: 'A request for information sent to a database.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w8', number: 8, targetWord: 'CACHE', definition: 'A fast storage layer that keeps frequently used data close at hand.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
++    { id: 'w9', number: 9, targetWord: 'PIXEL', definition: 'The smallest addressable element in a digital image.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
++    { id: 'w10', number: 10, targetWord: 'SCHEMA', definition: 'The blueprint that describes how a database is structured.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w11', number: 11, targetWord: 'PYTHON', definition: 'A popular programming language widely used for automation and data science.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
++    { id: 'w12', number: 12, targetWord: 'REGRESSION', definition: 'A statistical method used to model relationships and predict a numeric outcome.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
++    { id: 'w13', number: 13, targetWord: 'ALGORITHM', definition: 'A finite sequence of steps designed to solve a problem.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w14', number: 14, targetWord: 'DASHBOARD', definition: 'A visual display that brings important business metrics together in one place.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
++    { id: 'w15', number: 15, targetWord: 'BLOCKCHAIN', definition: 'A distributed ledger that records transactions in linked, tamper-resistant blocks.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
++    { id: 'w16', number: 16, targetWord: 'VISUALIZATION', definition: 'The practice of turning data into charts, graphs, and other visual forms.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+ ];
+ 
+ interface GameActions {
+@@ -214,10 +197,25 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+ 
+         hydrateFromStorage: () => {
+             if (typeof window === 'undefined') return;
+-            const raw = localStorage.getItem(STORAGE_KEY);
++            // Migrate the previous saved game without discarding teams, scores,
++            // Jeopardy progress, or Round 2 state. Replace only the old untouched
++            // three-word starter bank with the expanded variable-length bank.
++            const raw =
++                localStorage.getItem(STORAGE_KEY) ??
++                localStorage.getItem('guessgriddle_xinsights_state_v3');
+             if (raw) {
+                 try {
+                     const parsed = JSON.parse(raw);
++                    const hasUntouchedStarterWordleBank =
++                        Array.isArray(parsed.wordles) &&
++                        parsed.wordles.length === 3 &&
++                        parsed.wordles.every((w: WordlePuzzle) => w.guesses?.length === 0) &&
++                        parsed.wordles.map((w: WordlePuzzle) => w.targetWord).join(',') === 'PIVOT,CHURN,PROXY';
++                    if (hasUntouchedStarterWordleBank) {
++                        parsed.wordles = SAMPLE_WORDLES;
++                        parsed.activeWordleId = null;
++                        parsed.wordleCountCompleted = 0;
++                    }
+                     set((prev) => ({ ...prev, ...parsed }));
+                 } catch { }
+             }
+@@ -360,6 +358,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+             commit((s) => {
+                 const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
+                 if (!puzzle || puzzle.guesses.length >= 6 || s.teams.length === 0) return {};
++                if (guessWord.trim().length !== puzzle.targetWord.length || !/^[a-z]+$/i.test(guessWord.trim())) return {};
+ 
+                 const activeTeamIdx =
+                     (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
+diff --git a/src/types/game.ts b/src/types/game.ts
+index bb74f18..b85d804 100644
+--- a/src/types/game.ts
++++ b/src/types/game.ts
+@@ -40,11 +40,11 @@ export interface WordleGuess {
+ export interface WordlePuzzle {
+     id: string;
+     number: number;
+-    targetWord: string; // 5-letter uppercase
++    targetWord: string; // Uppercase word; length is determined per puzzle
+     definition: string;
+     isCompleted: boolean;
+     guesses: WordleGuess[];
+-    discoveredGreenIndices: number[]; // Indices 0-4 already found green
++    discoveredGreenIndices: number[]; // Zero-based positions already found green
+     discoveredLetters: string[];      // Unique letters already discovered (yellow or green)
+     startingTeamIndex: number;
+ }

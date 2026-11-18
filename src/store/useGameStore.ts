@@ -12,7 +12,7 @@ import {
 import { evaluateWordleGuess } from '@/utils/wordleLogic';
 import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
 
-const STORAGE_KEY = 'guessgriddle_xinsights_state_v3';
+const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
 const CHANNEL_NAME = 'guessgriddle_sync_channel';
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -81,39 +81,22 @@ const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
 ];
 
 const SAMPLE_WORDLES: WordlePuzzle[] = [
-    {
-        id: 'w1',
-        number: 1,
-        targetWord: 'PIVOT',
-        definition: 'A strategic shift in business direction without changing the core vision.',
-        isCompleted: false,
-        guesses: [],
-        discoveredGreenIndices: [],
-        discoveredLetters: [],
-        startingTeamIndex: 0,
-    },
-    {
-        id: 'w2',
-        number: 2,
-        targetWord: 'CHURN',
-        definition: 'The percentage of customers who stop using a company’s product over a period.',
-        isCompleted: false,
-        guesses: [],
-        discoveredGreenIndices: [],
-        discoveredLetters: [],
-        startingTeamIndex: 1,
-    },
-    {
-        id: 'w3',
-        number: 3,
-        targetWord: 'PROXY',
-        definition: 'A variable used to stand in for another difficult-to-measure metric in analytics.',
-        isCompleted: false,
-        guesses: [],
-        discoveredGreenIndices: [],
-        discoveredLetters: [],
-        startingTeamIndex: 2,
-    },
+    { id: 'w1', number: 1, targetWord: 'TOKEN', definition: 'A basic unit of text processed by a language model.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w2', number: 2, targetWord: 'LOGIC', definition: 'The reasoning process that helps a computer make decisions.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w3', number: 3, targetWord: 'TREND', definition: 'A pattern showing how a metric changes over time.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w4', number: 4, targetWord: 'PIVOT', definition: 'An Excel feature that summarizes and rearranges large datasets dynamically.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w5', number: 5, targetWord: 'BAYES', definition: 'The theorem used to update probabilities when new evidence appears.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w6', number: 6, targetWord: 'EMBED', definition: 'The process of representing data as numerical vectors.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w7', number: 7, targetWord: 'QUERY', definition: 'A request for information sent to a database.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w8', number: 8, targetWord: 'CACHE', definition: 'A fast storage layer that keeps frequently used data close at hand.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w9', number: 9, targetWord: 'PIXEL', definition: 'The smallest addressable element in a digital image.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w10', number: 10, targetWord: 'SCHEMA', definition: 'The blueprint that describes how a database is structured.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w11', number: 11, targetWord: 'PYTHON', definition: 'A popular programming language widely used for automation and data science.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w12', number: 12, targetWord: 'REGRESSION', definition: 'A statistical method used to model relationships and predict a numeric outcome.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w13', number: 13, targetWord: 'ALGORITHM', definition: 'A finite sequence of steps designed to solve a problem.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w14', number: 14, targetWord: 'DASHBOARD', definition: 'A visual display that brings important business metrics together in one place.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w15', number: 15, targetWord: 'BLOCKCHAIN', definition: 'A distributed ledger that records transactions in linked, tamper-resistant blocks.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w16', number: 16, targetWord: 'VISUALIZATION', definition: 'The practice of turning data into charts, graphs, and other visual forms.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
 ];
 
 interface GameActions {
@@ -214,10 +197,25 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
 
         hydrateFromStorage: () => {
             if (typeof window === 'undefined') return;
-            const raw = localStorage.getItem(STORAGE_KEY);
+            // Migrate the previous saved game without discarding teams, scores,
+            // Jeopardy progress, or Round 2 state. Replace only the old untouched
+            // three-word starter bank with the expanded variable-length bank.
+            const raw =
+                localStorage.getItem(STORAGE_KEY) ??
+                localStorage.getItem('guessgriddle_xinsights_state_v3');
             if (raw) {
                 try {
                     const parsed = JSON.parse(raw);
+                    const hasUntouchedStarterWordleBank =
+                        Array.isArray(parsed.wordles) &&
+                        parsed.wordles.length === 3 &&
+                        parsed.wordles.every((w: WordlePuzzle) => w.guesses?.length === 0) &&
+                        parsed.wordles.map((w: WordlePuzzle) => w.targetWord).join(',') === 'PIVOT,CHURN,PROXY';
+                    if (hasUntouchedStarterWordleBank) {
+                        parsed.wordles = SAMPLE_WORDLES;
+                        parsed.activeWordleId = null;
+                        parsed.wordleCountCompleted = 0;
+                    }
                     set((prev) => ({ ...prev, ...parsed }));
                 } catch { }
             }
@@ -360,6 +358,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             commit((s) => {
                 const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
                 if (!puzzle || puzzle.guesses.length >= 6 || s.teams.length === 0) return {};
+                if (guessWord.trim().length !== puzzle.targetWord.length || !/^[a-z]+$/i.test(guessWord.trim())) return {};
 
                 const activeTeamIdx =
                     (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
