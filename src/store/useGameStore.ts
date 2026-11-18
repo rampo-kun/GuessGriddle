@@ -23,34 +23,40 @@ const DEFAULT_CONFIG: GameConfig = {
     r2AssignCost: 200,
     r2StealCost: 300,
     r2StealRefundPercent: 50,
-    // Wiki Race words are recognizable Wikipedia pages with lots of useful cross-links.
+    // Wiki Race words are recognizable Wikipedia pages with multiple possible cross-links.
     startingWordPool: [
         'PIZZA',
         'BARBIE',
         'MONOPOLY',
-        'CAPTCHA',
-        'IKEA',
         'OCTOPUS',
+        'IKEA',
+        'CAPTCHA',
     ],
     auctionWordPool: [
-        'ENRON',
-        'PONZI SCHEME',
-        'QR CODE',
-        'DEEPFAKE',
-        'DUNNING-KRUGER EFFECT',
-        'PARETO PRINCIPLE',
-        'BITCOIN',
-        'MEME',
-        'TAMAGOTCHI',
-        'RUBE GOLDBERG MACHINE',
-        'BLACK FRIDAY',
-        'SPAM',
-        'ALGORITHM',
-        'RECOMMENDER SYSTEM',
-        'DATA MINING',
-        'BAYES’ THEOREM',
-        'TULIP MANIA',
-        'RUBBER DUCK DEBUGGING',
+        'CHOCOLATE',
+        'COFFEE',
+        'SUSHI',
+        'ITALY',
+        'DISNEY',
+        'HOLLYWOOD',
+        'ANIMATION',
+        'SUPERHERO',
+        'LEGO',
+        'NINTENDO',
+        'AMAZON',
+        'COCA-COLA',
+        'GOOGLE',
+        'INTERNET',
+        'ARTIFICIAL INTELLIGENCE',
+        'SMARTPHONE',
+        'ROBOT',
+        'CINEMA',
+        'DOLPHIN',
+        'PENGUIN',
+        'VOLCANO',
+        'SOLAR SYSTEM',
+        'SWEDEN',
+        'YOUTUBE',
     ],
 };
 
@@ -59,6 +65,14 @@ const LEGACY_AUCTION_WORD_POOL = [
     'BLACK SWAN', 'MEME', 'BLOCKCHAIN', 'ALGORITHM', 'REGRESSION', 'PARETO PRINCIPLE',
     'BAYESIAN INFERENCE', 'DATA VISUALIZATION', 'NEURAL NETWORK', 'CRYPTOGRAPHY', 'DOPAMINE',
     'SCHADENFREUDE', 'PANGOLIN', 'BIOLUMINESCENCE', 'DEJA VU', 'LIMERENCE', 'PETRICHOR', 'TARDIGRADE',
+];
+
+// Previous built-in defaults shipped before the updated Wiki Race bank.
+const PREVIOUS_DEFAULT_STARTING_WORD_POOL = ['PIZZA', 'BARBIE', 'MONOPOLY', 'CAPTCHA', 'IKEA', 'OCTOPUS'];
+const PREVIOUS_DEFAULT_AUCTION_WORD_POOL = [
+    'ENRON', 'PONZI SCHEME', 'QR CODE', 'DEEPFAKE', 'DUNNING-KRUGER EFFECT', 'PARETO PRINCIPLE',
+    'BITCOIN', 'MEME', 'TAMAGOTCHI', 'RUBE GOLDBERG MACHINE', 'BLACK FRIDAY', 'SPAM',
+    'ALGORITHM', 'RECOMMENDER SYSTEM', 'DATA MINING', 'BAYES’ THEOREM', 'TULIP MANIA', 'RUBBER DUCK DEBUGGING',
 ];
 
 const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
@@ -237,11 +251,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     }
                     // Upgrade only the previous built-in Wiki Race bank; preserve any custom bank.
                     if (parsed.config && Array.isArray(parsed.config.startingWordPool) &&
-                        JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL)) {
+                        (JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL) ||
+                            JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(PREVIOUS_DEFAULT_STARTING_WORD_POOL))) {
                         parsed.config = { ...parsed.config, startingWordPool: DEFAULT_CONFIG.startingWordPool };
                     }
                     if (parsed.config && Array.isArray(parsed.config.auctionWordPool) &&
-                        JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(LEGACY_AUCTION_WORD_POOL)) {
+                        (JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(LEGACY_AUCTION_WORD_POOL) ||
+                            JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(PREVIOUS_DEFAULT_AUCTION_WORD_POOL))) {
                         parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
                     }
                     set((prev) => ({ ...prev, ...parsed }));
