@@ -30,7 +30,7 @@ export default function WordleBoard() {
                 </div>
             </header>
 
-            <section className="shrink-0 flex justify-center"><RoundTimer /></section>
+            <section className="shrink-0 flex justify-center px-2" aria-label="Audience countdown"><RoundTimer /></section>
 
             <section className="shrink-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(230px,320px)] gap-3">
                 <div className="rounded-2xl border-2 border-[#d8c8a8] bg-[#fffaf0] px-5 py-3 md:px-6 md:py-4 shadow-[0_4px_0_rgba(48,59,80,.12)] min-w-0">

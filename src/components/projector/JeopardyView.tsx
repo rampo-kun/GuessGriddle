@@ -46,8 +46,6 @@ export default function JeopardyView() {
                 </div>
             </div>
 
-            {activeQuestion && <div className="shrink-0 flex justify-center"><RoundTimer /></div>}
-
             {/* Jeopardy Grid */}
             <div
                 className="grid gap-3 md:gap-4 flex-1 min-h-0"
@@ -91,7 +89,10 @@ export default function JeopardyView() {
             {/* Active Guesstimate Modal on Smartboard (Hides Secret Bounds!) */}
             {activeQuestion && (
                 <div className="fixed inset-0 bg-[#24211d]/95 backdrop-blur-md flex items-center justify-center p-5 md:p-8 z-50">
-                    <div className="max-w-4xl w-full max-h-full overflow-y-auto bg-[#fff7e8] text-[#24211d] border-4 border-[#e9b949] rounded-3xl p-6 md:p-10 text-center shadow-2xl">
+                    <div className="max-w-4xl w-full max-h-full overflow-y-auto bg-[#fff7e8] text-[#24211d] border-4 border-[#e9b949] rounded-3xl p-5 md:p-8 text-center shadow-2xl">
+                        <div className="mb-5">
+                            <RoundTimer />
+                        </div>
                         <div className="inline-flex items-center gap-2 bg-[#f5e8cc] text-[#a82e22] px-5 py-2 rounded-full text-lg font-bold mb-6">
                             <Sparkles className="w-5 h-5" />
                             {activeQuestion.category} • {activeQuestion.points} PTS
