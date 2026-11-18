@@ -21,6 +21,8 @@ export default function AdminVaultPage() {
     const [qMin, setQMin] = useState(0);
     const [qMax, setQMax] = useState(0);
     const [qUnit, setQUnit] = useState('');
+    const [qImageUrl, setQImageUrl] = useState('');
+    const [qIsImage, setQIsImage] = useState(false);
 
     const [wWord, setWWord] = useState('');
     const [wDef, setWDef] = useState('');
@@ -563,6 +565,10 @@ export default function AdminVaultPage() {
                         <div>
                             <h3 className="text-lg font-black mb-3">Add Jeopardy Guesstimate</h3>
                             <div className="grid grid-cols-2 gap-2">
+                                <label className="col-span-2 flex items-center gap-2 text-sm text-slate-300">
+                                    <input type="checkbox" checked={qIsImage} onChange={(e) => setQIsImage(e.target.checked)} />
+                                    Image valuation tile (teams estimate the total worth shown)
+                                </label>
                                 <input
                                     placeholder="Category (e.g. FINANCE)"
                                     value={qCat}
@@ -576,12 +582,21 @@ export default function AdminVaultPage() {
                                     onChange={(e) => setQPts(Number(e.target.value))}
                                     className="bg-slate-950 border border-slate-700 rounded p-2 text-sm"
                                 />
-                                <input
-                                    placeholder="Guesstimate Question"
-                                    value={qText}
-                                    onChange={(e) => setQText(e.target.value)}
-                                    className="col-span-2 bg-slate-950 border border-slate-700 rounded p-2 text-sm"
-                                />
+                                {qIsImage ? (
+                                    <input
+                                        placeholder="Image URL (https://...)"
+                                        value={qImageUrl}
+                                        onChange={(e) => setQImageUrl(e.target.value)}
+                                        className="col-span-2 bg-slate-950 border border-slate-700 rounded p-2 text-sm"
+                                    />
+                                ) : (
+                                    <input
+                                        placeholder="Guesstimate Question"
+                                        value={qText}
+                                        onChange={(e) => setQText(e.target.value)}
+                                        className="col-span-2 bg-slate-950 border border-slate-700 rounded p-2 text-sm"
+                                    />
+                                )}
                                 <input
                                     type="number"
                                     placeholder="Exact Answer"
@@ -610,23 +625,29 @@ export default function AdminVaultPage() {
                                     className="bg-slate-950 border border-slate-700 rounded p-2 text-sm"
                                 />
                             </div>
+                            {qIsImage && qImageUrl.trim() && (
+                                <img src={qImageUrl} alt="Image valuation preview" className="mt-3 max-h-40 rounded-lg border border-slate-700 object-contain" />
+                            )}
                             <button
                                 onClick={() => {
-                                    if (!qCat || !qText) return;
+                                    if (!qCat || (qIsImage ? !qImageUrl.trim() : !qText.trim())) return;
                                     store.addJeopardyQuestion({
                                         category: qCat,
                                         points: qPts,
-                                        question: qText,
+                                        question: qIsImage ? 'Estimate the total worth of everything shown in this image.' : qText,
+                                        isImageQuestion: qIsImage,
+                                        imageUrl: qIsImage ? qImageUrl.trim() : undefined,
                                         actualAnswer: qAns,
                                         minLimit: qMin,
                                         maxLimit: qMax,
                                         unit: qUnit,
                                     });
                                     setQText('');
+                                    setQImageUrl('');
                                 }}
                                 className="mt-2 w-full bg-indigo-600 py-2 rounded-lg font-bold text-sm"
                             >
-                                Add Guesstimate Tile
+                                Add Jeopardy Tile
                             </button>
                         </div>
 

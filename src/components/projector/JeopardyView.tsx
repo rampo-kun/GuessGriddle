@@ -94,9 +94,22 @@ export default function JeopardyView() {
                             {activeQuestion.category} • {activeQuestion.points} PTS
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-white mb-10">
-                            {activeQuestion.question}
-                        </h1>
+                        {activeQuestion.isImageQuestion && activeQuestion.imageUrl ? (
+                            <div className="mb-8">
+                                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight text-white mb-6">
+                                    Estimate the total worth of everything shown in this image.
+                                </h1>
+                                <img
+                                    src={activeQuestion.imageUrl}
+                                    alt="Image valuation challenge"
+                                    className="mx-auto max-h-[48vh] max-w-full rounded-2xl border border-indigo-400/40 object-contain"
+                                />
+                            </div>
+                        ) : (
+                            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-white mb-10">
+                                {activeQuestion.question}
+                            </h1>
+                        )}
 
                         <div className="text-xl text-slate-400 mb-8">
                             Unit: <span className="text-amber-400 font-bold">{activeQuestion.unit}</span>

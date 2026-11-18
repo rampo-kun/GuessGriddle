@@ -24,6 +24,8 @@ export interface JeopardyQuestion {
     minLimit: number;
     maxLimit: number;
     unit: string;
+    isImageQuestion?: boolean;
+    imageUrl?: string;
     isCompleted: boolean;
     answeredByTeamId?: string;
 }

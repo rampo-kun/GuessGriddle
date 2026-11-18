@@ -11,7 +11,7 @@ import {
 } from '@/types/game';
 import { evaluateWordleGuess } from '@/utils/wordleLogic';
 
-const STORAGE_KEY = 'guessgriddle_xinsights_state_v1';
+const STORAGE_KEY = 'guessgriddle_xinsights_state_v2';
 const CHANNEL_NAME = 'guessgriddle_sync_channel';
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -53,72 +53,30 @@ const DEFAULT_CONFIG: GameConfig = {
 };
 
 const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
-    {
-        id: 'j1',
-        category: 'BENGALURU & TECH',
-        points: 100,
-        question: 'How many cups of filter coffee are consumed daily across Bengaluru offices?',
-        actualAnswer: 1800000,
-        minLimit: 1200000,
-        maxLimit: 2400000,
-        unit: 'cups',
-        isCompleted: false,
-    },
-    {
-        id: 'j2',
-        category: 'BENGALURU & TECH',
-        points: 200,
-        question: 'Total weight (in kg) of all laptops currently inside Electronic City Phase 1?',
-        actualAnswer: 350000,
-        minLimit: 250000,
-        maxLimit: 450000,
-        unit: 'kg',
-        isCompleted: false,
-    },
-    {
-        id: 'j3',
-        category: 'INDIAN COMMERCE',
-        points: 100,
-        question: 'How many UPI transactions occur in India in a single hour on average?',
-        actualAnswer: 22000000,
-        minLimit: 16000000,
-        maxLimit: 28000000,
-        unit: 'txns',
-        isCompleted: false,
-    },
-    {
-        id: 'j4',
-        category: 'INDIAN COMMERCE',
-        points: 200,
-        question: 'How many samosas are sold across Indian railway stations in one day?',
-        actualAnswer: 4500000,
-        minLimit: 3000000,
-        maxLimit: 6000000,
-        unit: 'samosas',
-        isCompleted: false,
-    },
-    {
-        id: 'j5',
-        category: 'CAMPUS LIFE',
-        points: 100,
-        question: 'Total sheets of A4 paper printed by an MBA batch in one trimester?',
-        actualAnswer: 120000,
-        minLimit: 80000,
-        maxLimit: 160000,
-        unit: 'sheets',
-        isCompleted: false,
-    },
-    {
-        id: 'j6',
-        category: 'CAMPUS LIFE',
-        points: 200,
-        question: 'How many collective hours of sleep do 120 PGDM students get during exam week (7 days)?',
-        actualAnswer: 4200,
-        minLimit: 3200,
-        maxLimit: 5200,
-        unit: 'hours',
-        isCompleted: false,
-    },
+    { id: 'j1', category: "SPORTS", points: 100, question: "Michael Phelps has more gold medals than some countries. How many Olympic golds did he win?", actualAnswer: 23, minLimit: 20, maxLimit: 26, unit: "gold medals", isCompleted: false },
+    { id: 'j2', category: "SPORTS", points: 200, question: "Usain Bolt ran 100 m in 9.58 s. How many strides did he take to cover it? (Sprinters' legs have a lot of opinions.)", actualAnswer: 41, minLimit: 37, maxLimit: 46, unit: "strides", isCompleted: false },
+    { id: 'j3', category: "SPORTS", points: 300, question: "The 2022 Qatar World Cup had 64 matches. How many goals were scored in total, including the Messi–Mbappé final?", actualAnswer: 172, minLimit: 150, maxLimit: 195, unit: "goals", isCompleted: false },
+    { id: 'j4', category: "SPORTS", points: 400, question: "Sachin Tendulkar retired as the highest run-scorer in international cricket. How many runs did he score across Tests, ODIs and the lone T20I?", actualAnswer: 34357, minLimit: 28000, maxLimit: 41000, unit: "runs", isCompleted: false },
+    { id: 'j5', category: "WEIRD & FUNNY WORLD RECORDS", points: 100, question: "Robert Wadlow is the tallest man in recorded history. How tall was he, in metres?", actualAnswer: 2.72, minLimit: 2.5, maxLimit: 2.9, unit: "metres", isCompleted: false },
+    { id: 'j6', category: "WEIRD & FUNNY WORLD RECORDS", points: 200, question: "Joey Chestnut holds the record for hot dogs (with buns) eaten in 10 minutes. How many?", actualAnswer: 76, minLimit: 60, maxLimit: 90, unit: "hot dogs", isCompleted: false },
+    { id: 'j7', category: "WEIRD & FUNNY WORLD RECORDS", points: 300, question: "Nick Stoeberl holds the record for the longest tongue. How long is it, in cm?", actualAnswer: 10.1, minLimit: 8, maxLimit: 12, unit: "cm", isCompleted: false },
+    { id: 'j8', category: "WEIRD & FUNNY WORLD RECORDS", points: 400, question: "Charles Osborne had the longest recorded hiccup attack, and his lungs did not get a day off. For how many years did it last?", actualAnswer: 68, minLimit: 55, maxLimit: 80, unit: "years", isCompleted: false },
+    { id: 'j9', category: "RANDOM AF", points: 100, question: "How many times does an average human blink in a day, while awake?", actualAnswer: 17500, minLimit: 10000, maxLimit: 25000, unit: "blinks", isCompleted: false },
+    { id: 'j10', category: "RANDOM AF", points: 200, question: "How many steps would you climb to reach the top of the Eiffel Tower on foot?", actualAnswer: 1665, minLimit: 1200, maxLimit: 2200, unit: "steps", isCompleted: false },
+    { id: 'j11', category: "RANDOM AF", points: 300, question: "How many grains of rice are in a 1 kg bag of regular long-grain rice?", actualAnswer: 50000, minLimit: 35000, maxLimit: 65000, unit: "grains", isCompleted: false },
+    { id: 'j12', category: "RANDOM AF", points: 400, question: "How many passengers ride the Mumbai suburban local trains on an average day (pre-COVID, Western and Central lines combined)?", actualAnswer: 7500000, minLimit: 5500000, maxLimit: 9500000, unit: "passengers", isCompleted: false },
+    { id: 'j13', category: "WHAT THE ACTUAL SIZE?", points: 100, question: "Indian Railways has about 68,000 route km. The Earth's circumference is 40,075 km. How many times could the railway network wrap around the Earth?", actualAnswer: 1.7, minLimit: 1.2, maxLimit: 2.5, unit: "times", isCompleted: false },
+    { id: 'j14', category: "WHAT THE ACTUAL SIZE?", points: 200, question: "An idli is about 8 cm across. How many idlis, laid in a line, would cover the 145 km from Bengaluru to Mysuru?", actualAnswer: 1800000, minLimit: 1200000, maxLimit: 2500000, unit: "idlis", isCompleted: false },
+    { id: 'j15', category: "WHAT THE ACTUAL SIZE?", points: 300, question: "A ₹500 note is about 0.1 mm thick. How many notes would you need to stack to match the height of Mount Everest (8,849 m)?", actualAnswer: 88000000, minLimit: 60000000, maxLimit: 120000000, unit: "notes", isCompleted: false },
+    { id: 'j16', category: "WHAT THE ACTUAL SIZE?", points: 400, question: "Every Indian holds hands with the next person to form one giant human chain. How many times would it stretch from the Earth to the Moon (384,400 km)? (Work out the spacing per person yourself.)", actualAnswer: 5.7, minLimit: 4, maxLimit: 8, unit: "times", isCompleted: false },
+    { id: 'j17', category: "BUSINESS GONE WILD", points: 100, question: "How many McDonald's outlets exist worldwide?", actualAnswer: 42500, minLimit: 35000, maxLimit: 50000, unit: "outlets", isCompleted: false },
+    { id: 'j18', category: "BUSINESS GONE WILD", points: 200, question: "How many iPhones does Apple sell in a year, give or take a few million?", actualAnswer: 227500000, minLimit: 180000000, maxLimit: 280000000, unit: "iPhones", isCompleted: false },
+    { id: 'j19', category: "BUSINESS GONE WILD", points: 300, question: "Coca-Cola's drinks are consumed worldwide every single day. How many servings per day?", actualAnswer: 2200000000, minLimit: 1500000000, maxLimit: 3000000000, unit: "servings", isCompleted: false },
+    { id: 'j20', category: "BUSINESS GONE WILD", points: 400, question: "In 2010, a programmer paid for two Papa John's pizzas with Bitcoin, the most expensive lunch in history. How many BTC did he pay?", actualAnswer: 10000, minLimit: 5000, maxLimit: 20000, unit: "BTC", isCompleted: false },
+    { id: 'j21', category: "INTERNET BROKE MY BRAIN", points: 100, question: "How many hours of video are uploaded to YouTube every minute?", actualAnswer: 500, minLimit: 300, maxLimit: 700, unit: "hours", isCompleted: false },
+    { id: 'j22', category: "INTERNET BROKE MY BRAIN", points: 200, question: "'Me at the zoo' is the first video ever uploaded to YouTube. How long is it, in seconds?", actualAnswer: 19, minLimit: 10, maxLimit: 30, unit: "seconds", isCompleted: false },
+    { id: 'j23', category: "INTERNET BROKE MY BRAIN", points: 300, question: "How many Google searches happen per day? (Your 2 AM 'is this mole normal?' is included.)", actualAnswer: 8500000000, minLimit: 5000000000, maxLimit: 12000000000, unit: "searches", isCompleted: false },
+    { id: 'j24', category: "INTERNET BROKE MY BRAIN", points: 400, question: "In 2020, Meta said WhatsApp handled how many messages a day?", actualAnswer: 100000000000, minLimit: 70000000000, maxLimit: 150000000000, unit: "messages", isCompleted: false },
 ];
 
 const SAMPLE_WORDLES: WordlePuzzle[] = [
