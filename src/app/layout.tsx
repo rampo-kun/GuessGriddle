@@ -7,7 +7,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "GuessGriddle | X-Insights Game Show",
-  description: "The X-Insights interactive game show — quiz, guesstimates, Wordle and wild business pitches.",
+  description: "The X-Insights interactive game show — quiz, guesstimates, and wild wordles.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

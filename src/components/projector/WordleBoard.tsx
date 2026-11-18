@@ -7,10 +7,14 @@ export default function WordleBoard() {
     const puzzle = wordles.find((w) => w.id === activeWordleId);
     if (!puzzle) return null;
 
-    const teamCount = Math.max(teams.length, 1);
-    const activeTeamIdx = (puzzle.startingTeamIndex + puzzle.guesses.length) % teamCount;
-    const activeTeam = teams[activeTeamIdx];
-    const queueOrder = teams.map((_, offset) => teams[(puzzle.startingTeamIndex + offset) % teams.length]);
+    const activeTeam = teams.find((team) => team.id === puzzle.assignedTeamId);
+    const maxGuesses = config.wordleMaxGuesses ?? 6;
+    const rewardByDifficulty = {
+        easy: [90, 68, 50, 32, 18, 9],
+        medium: [130, 98, 72, 46, 26, 13],
+        hard: [180, 135, 99, 63, 36, 18],
+    } as const;
+    const nextGuessReward = rewardByDifficulty[puzzle.difficulty ?? 'medium'][puzzle.guesses.length] ?? 0;
 
     const statusStyle = {
         correct: 'bg-[#237747] border-[#155b35] text-white',
@@ -22,11 +26,11 @@ export default function WordleBoard() {
         <main className="wordle-screen h-[100dvh] w-screen overflow-hidden bg-[#f5e8cc] text-[#24211d] px-4 py-3 md:px-6 md:py-4 flex flex-col gap-3">
             <header className="shrink-0 flex items-center justify-between gap-4 rounded-2xl bg-[#303b50] px-5 py-3 md:px-7 border-b-4 border-[#e9b949] shadow-lg">
                 <div className="min-w-0">
-                    <p className="text-[10px] md:text-xs font-black uppercase tracking-[.22em] text-[#f2c14e]">X-Insights · Wordle Intermission</p>
+                    <p className="text-[10px] md:text-xs font-black uppercase tracking-[.22em] text-[#f2c14e]">X-Insights · Jeopardy Bonus Wordle</p>
                     <h1 className="text-xl md:text-3xl font-black tracking-tight text-white">FULL-WORD CHALLENGE <span className="text-[#f2c14e]">#{puzzle.number}</span></h1>
                 </div>
                 <div className="shrink-0 text-right">
-                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-[#f2c14e]">{puzzle.isCompleted ? 'Challenge complete' : 'CURRENT TURN'}</p>
+                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-[#f2c14e]">{puzzle.isCompleted ? 'Challenge complete' : 'SELECTED TEAM'}</p>
                     <p className="max-w-[34vw] truncate text-lg md:text-2xl font-black text-white">{puzzle.isCompleted ? 'ANSWER REVEALED' : activeTeam?.name ?? 'Teams ready?'}</p>
                 </div>
             </header>
@@ -40,20 +44,13 @@ export default function WordleBoard() {
                 <div className={`rounded-2xl border-[3px] px-5 py-3 flex flex-col justify-center shadow-[0_4px_0_rgba(48,59,80,.12)] ${puzzle.isCompleted ? 'border-[#237747] bg-[#e1f0e5]' : 'border-[#24211d] bg-[#f2c14e]'}`}>
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[.18em] text-[#514a40]">{puzzle.isCompleted ? 'Round status' : 'UP NOW · MAKE YOUR GUESS'}</p>
                     <p className="mt-1 text-xl md:text-3xl font-black leading-tight text-[#24211d] break-words">{puzzle.isCompleted ? 'Challenge complete' : activeTeam?.name ?? 'Waiting for teams'}</p>
-                    {!puzzle.isCompleted && <p className="mt-1 text-xs md:text-sm font-bold text-[#514a40]">Team {activeTeamIdx + 1} of {teams.length} · {puzzle.guesses.length} guesses played</p>}
+                    {!puzzle.isCompleted && <p className="mt-1 text-xs md:text-sm font-bold text-[#514a40]">{puzzle.guesses.length} of {maxGuesses} guesses used · {puzzle.difficulty ?? 'medium'} difficulty</p>}
                 </div>
             </section>
 
-            <section className="shrink-0 flex items-center gap-2 overflow-hidden rounded-xl border border-[#d8c8a8] bg-[#fff7e8] px-3 py-2">
-                <span className="shrink-0 text-[10px] md:text-xs font-black uppercase tracking-widest text-[#514a40]">Turn order</span>
-                <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-                    {queueOrder.map((team, i) => {
-                        const isActive = !puzzle.isCompleted && team.id === activeTeam?.id;
-                        return <div key={team.id} className={`max-w-full rounded-full border px-3 py-1 text-[10px] md:text-xs font-extrabold truncate ${isActive ? 'bg-[#303b50] border-[#303b50] text-white ring-2 ring-[#f2c14e] ring-offset-1' : 'bg-white border-[#d8c8a8] text-[#303b50]'}`}>
-                            {i + 1}. {team.name}{isActive ? '  ← PLAYING' : ''}
-                        </div>;
-                    })}
-                </div>
+            <section className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d8c8a8] bg-[#fff7e8] px-3 py-2 text-xs font-bold text-[#514a40]">
+                <span>ONE TEAM CHALLENGE · {puzzle.difficulty ?? 'medium'} WORDLE</span>
+                <span>Potential solve reward this guess: {puzzle.isCompleted ? 0 : nextGuessReward} points</span>
             </section>
 
             <section className="wordle-history flex-1 min-h-0 rounded-2xl border-2 border-[#d8c8a8] bg-[#fffaf0] p-3 md:p-4 flex flex-col shadow-[0_5px_0_rgba(48,59,80,.10)]">
@@ -94,9 +91,9 @@ export default function WordleBoard() {
 
             <footer className="shrink-0 flex items-center justify-between gap-3 px-1 text-[9px] md:text-[11px] font-black uppercase tracking-wider text-[#514a40]">
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    <span><b className="text-[#155b37]">GREEN</b> +{config.wordleNewGreenPoints} · New exact position</span>
-                    <span><b className="text-[#805600]">YELLOW</b> +{config.wordleNewYellowPoints} · New letter</span>
-                    <span><b className="text-[#454b55]">GREY</b> No points</span>
+                    <span><b className="text-[#155b37]">GREEN</b> Correct position</span>
+                    <span><b className="text-[#805600]">YELLOW</b> Correct letter, wrong position</span>
+                    <span><b className="text-[#454b55]">GREY</b> Not in answer</span>
                 </div>
                 <div className="shrink-0 text-right">{puzzle.isCompleted && <span className="mr-3 rounded-lg bg-[#dcebdd] px-2 py-1 text-[#155b37]">Answer: {puzzle.targetWord}</span>}X-INSIGHTS</div>
             </footer>

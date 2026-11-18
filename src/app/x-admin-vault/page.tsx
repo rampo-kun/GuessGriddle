@@ -24,6 +24,8 @@ export default function AdminVaultPage() {
 
     const [wWord, setWWord] = useState('');
     const [wDef, setWDef] = useState('');
+    const [wDifficulty, setWDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+    const [wordleTeamId, setWordleTeamId] = useState('');
 
     // Round 2 Assign/Steal selectors
     const [targetTeamId, setTargetTeamId] = useState('');
@@ -47,25 +49,12 @@ export default function AdminVaultPage() {
     const activeWordle = store.wordles.find((w) => w.id === store.activeWordleId);
     const currentJeopardyTeam = store.teams[store.jeopardyTurnIndex];
     const currentR2Team = store.teams[store.r2TurnIndex];
-    const wordleTeamCount = store.teams.length;
-    const nextWordleStartingIndex = wordleTeamCount > 0
-        ? store.wordleCountCompleted % wordleTeamCount
-        : -1;
-    const nextWordleStartingTeam = nextWordleStartingIndex >= 0
-        ? store.teams[nextWordleStartingIndex]
+    const activeWordleTeam = activeWordle
+        ? store.teams.find((team) => team.id === activeWordle.assignedTeamId)
         : undefined;
-    const activeWordleTurnIndex = activeWordle && wordleTeamCount > 0
-        ? (activeWordle.startingTeamIndex + activeWordle.guesses.length) % wordleTeamCount
-        : -1;
-    const activeWordleTeam = activeWordleTurnIndex >= 0
-        ? store.teams[activeWordleTurnIndex]
-        : undefined;
-    const followingWordleTeam = activeWordle && wordleTeamCount > 0 && !activeWordle.isCompleted
-        ? store.teams[(activeWordleTurnIndex + 1) % wordleTeamCount]
-        : nextWordleStartingTeam;
-    const nextPuzzleStartingTeam = activeWordle && !activeWordle.isCompleted && wordleTeamCount > 0
-        ? store.teams[(activeWordle.startingTeamIndex + 1) % wordleTeamCount]
-        : nextWordleStartingTeam;
+    const selectedWordleTeamId = store.teams.some((team) => team.id === wordleTeamId)
+        ? wordleTeamId
+        : store.teams[0]?.id ?? '';
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
@@ -229,117 +218,58 @@ export default function AdminVaultPage() {
                         )}
                     </div>
 
-                    {/* Wordle Control */}
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                        <h2 className="text-xl font-black mb-4 text-emerald-700">
-                            2. Wordle Circular Queue Control
-                        </h2>
+                    {/* Wordle Bonus Control — independent of the Jeopardy turn queue */}
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+                        <div>
+                            <h2 className="text-xl font-black text-emerald-400">2. Wordle Bonus Challenge</h2>
+                            <p className="text-xs text-slate-400 mt-1">Choose the team and difficulty. Only the selected team submits guesses; Jeopardy turn order is untouched. Each team gets one Wordle bonus challenge, preventing repeated easy-puzzle farming.</p>
+                        </div>
 
-                        <div className="mb-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
-                            <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-4">
-                                <p className="text-[11px] font-black uppercase tracking-[.18em] text-amber-300">Next Wordle · First team</p>
-                                <p className="mt-1 text-2xl font-black text-white">
-                                    {nextPuzzleStartingTeam?.name ?? 'Add teams to see the queue'}
-                                </p>
-                                <p className="mt-1 text-xs font-semibold text-slate-300">
-                                    Circular queue · Start position {nextWordleStartingIndex >= 0 ? nextWordleStartingIndex + 1 : '—'} of {wordleTeamCount || '—'}
-                                </p>
-                            </div>
-                            <div className="rounded-xl border border-slate-700 bg-slate-950 p-4">
-                                <p className="text-[11px] font-black uppercase tracking-[.18em] text-slate-400">Queue order for the next Wordle</p>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    {wordleTeamCount > 0 ? store.teams.map((team, offset) => {
-                                        const queueIndex = (nextWordleStartingIndex + offset) % wordleTeamCount;
-                                        const isFirst = offset === 0;
+                        <label className="block text-sm font-bold text-slate-300">
+                            Team playing this Wordle
+                            <select value={selectedWordleTeamId} onChange={(e) => setWordleTeamId(e.target.value)} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2">
+                                {store.teams.map((team) => {
+                                    const hasPlayed = store.wordles.some((puzzle) => puzzle.assignedTeamId === team.id);
+                                    return <option key={team.id} value={team.id}>{team.name}{hasPlayed ? ' · Wordle used' : ''}</option>;
+                                })}
+                            </select>
+                        </label>
+
+                        {(['easy', 'medium', 'hard'] as const).map((difficulty) => (
+                            <div key={difficulty} className="space-y-2">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-amber-300">{difficulty} · {difficulty === 'easy' ? '90' : difficulty === 'medium' ? '130' : '180'} max points</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {store.wordles.filter((p) => (p.difficulty ?? 'medium') === difficulty).map((puzzle) => {
+                                        const teamUsedAnotherPuzzle = store.wordles.some((p) => p.assignedTeamId === selectedWordleTeamId && p.id !== puzzle.id);
+                                        const puzzleAssignedToAnotherTeam = Boolean(puzzle.assignedTeamId && puzzle.assignedTeamId !== selectedWordleTeamId);
                                         return (
-                                            <span key={team.id} className={`rounded-full border px-3 py-1.5 text-xs font-extrabold ${isFirst ? 'border-amber-300 bg-amber-400 text-slate-950' : 'border-slate-600 bg-slate-800 text-slate-100'}`}>
-                                                {offset + 1}. {store.teams[queueIndex].name}{isFirst ? ' · STARTS' : ''}
-                                            </span>
-                                        );
-                                    }) : <span className="text-sm text-slate-400">No teams configured yet.</span>}
+                                        <button key={puzzle.id} disabled={puzzle.isCompleted || !selectedWordleTeamId || teamUsedAnotherPuzzle || puzzleAssignedToAnotherTeam} onClick={() => store.openWordle(puzzle.id, selectedWordleTeamId)} className={`px-3 py-2 rounded-lg border text-sm font-bold ${puzzle.isCompleted ? 'bg-slate-950 border-slate-700 text-slate-500' : 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100 hover:bg-emerald-900'}`}>
+                                            #{puzzle.number} · {puzzle.targetWord} {puzzle.isCompleted ? '✓' : teamUsedAnotherPuzzle ? '· Team used' : puzzleAssignedToAnotherTeam ? '· Assigned' : ''}
+                                        </button>
+                                    )})}
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-6">
-                            {store.wordles.map((w) => (
-                                <button
-                                    key={w.id}
-                                    onClick={() => store.openWordle(w.id)}
-                                    className={`px-4 py-2 rounded-xl font-bold text-sm border ${w.isCompleted
-                                            ? 'bg-slate-950 border-slate-700 text-slate-400'
-                                            : 'bg-emerald-900/40 border-emerald-500 text-emerald-200 hover:bg-emerald-900/70'
-                                        }`}
-                                >
-                                    Wordle #{w.number} ({w.targetWord})
-                                    <span className="ml-2 block text-[10px] font-semibold opacity-80">
-                                        Starts: {nextPuzzleStartingTeam?.name ?? 'Waiting for teams'}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                        ))}
 
                         {activeWordle && (
-                            <div className="bg-slate-950 border border-emerald-500 rounded-xl p-4">
-                                <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                    <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 p-3">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Playing now</p>
-                                        <p className="mt-1 text-lg font-black text-white">{activeWordle.isCompleted ? 'Puzzle complete' : activeWordleTeam?.name ?? 'No team'}</p>
-                                        <p className="text-[11px] text-slate-300">Turn {activeWordle.guesses.length + 1}</p>
+                            <div className="bg-slate-950 border border-emerald-500 rounded-xl p-4 space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
+                                        <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
+                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Points only on a correct solve</p>
                                     </div>
-                                    <div className="rounded-lg border border-sky-500/60 bg-sky-500/10 p-3">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-sky-300">Next in this queue</p>
-                                        <p className="mt-1 text-lg font-black text-white">{followingWordleTeam?.name ?? '—'}</p>
-                                        <p className="text-[11px] text-slate-300">After the current guess</p>
+                                    <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
+                                </div>
+                                <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
+                                <div className="text-xs text-slate-400">Reward schedule (if solved): Easy 90/68/50/32/18/9 · Medium 130/98/72/46/26/13 · Hard 180/135/99/63/36/18. Incorrect guesses earn zero points.</div>
+                                {!activeWordle.isCompleted && (
+                                    <div className="flex flex-wrap gap-2">
+                                        <input type="text" placeholder="Selected team's full-word guess" value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
+                                        <button disabled={!wordleGuessInput.trim()} onClick={() => { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); }} className="bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-5 py-2 rounded-lg font-bold">Submit Guess</button>
                                     </div>
-                                    <div className="rounded-lg border border-amber-500/60 bg-amber-500/10 p-3">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-amber-300">First team next Wordle</p>
-                                        <p className="mt-1 text-lg font-black text-white">{nextPuzzleStartingTeam?.name ?? '—'}</p>
-                                        <p className="text-[11px] text-slate-300">Queue rotates by one team</p>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mb-3 gap-3">
-                                    <span className="text-sm font-bold text-amber-300">
-                                        SECRET WORD: {activeWordle.targetWord}
-                                    </span>
-                                    <button
-                                        onClick={() => store.closeWordleAsComplete()}
-                                        className="text-xs bg-rose-600 text-white px-3 py-1 rounded font-bold"
-                                    >
-                                        Mark Done & Return to Grid
-                                    </button>
-                                </div>
-
-                                <div className="mb-3 text-xs text-slate-600">
-                                    Enter the team's complete word. The projector will not reveal the answer length.
-                                    Green = correct position; yellow = correct letter, wrong position. Each yellow
-                                    letter can score only once per puzzle, and each green position can score only once.
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Team's full-word guess"
-                                        value={wordleGuessInput}
-                                        onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && wordleGuessInput.trim()) {
-                                                store.submitWordleGuess(wordleGuessInput);
-                                                setWordleGuessInput('');
-                                            }
-                                        }}
-                                        className="min-w-0 flex-1 bg-white border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono"
-                                    />
-                                    <button
-                                        disabled={!wordleGuessInput.trim()}
-                                        onClick={() => {
-                                            store.submitWordleGuess(wordleGuessInput);
-                                            setWordleGuessInput('');
-                                        }}
-                                        className="bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-5 py-2 rounded-lg font-bold"
-                                    >
-                                        Submit Word
-                                    </button>
-                                </div>
+                                )}
+                                {activeWordle.isCompleted && <p className="font-bold text-emerald-300">Challenge complete. Answer: {activeWordle.targetWord}</p>}
                             </div>
                         )}
                     </div>
@@ -368,10 +298,11 @@ export default function AdminVaultPage() {
                                 Deal Starting Words
                             </button>
                             <button
+                                disabled={Boolean(store.currentMarketWord)}
                                 onClick={() => store.drawNextMarketWord()}
-                                className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-xl font-bold text-sm"
+                                className="bg-purple-600 hover:bg-purple-500 disabled:opacity-40 px-4 py-2 rounded-xl font-bold text-sm"
                             >
-                                Reveal Next Market Word
+                                {store.currentMarketWord ? 'Current Word Still in Auction' : 'Reveal Next Market Word'}
                             </button>
                             <button
                                 onClick={() => store.r2AutoFillRemaining()}
@@ -436,7 +367,7 @@ export default function AdminVaultPage() {
                                     onClick={() => store.r2SkipTurn()}
                                     className="bg-slate-700 px-4 py-2 rounded-xl font-bold text-sm"
                                 >
-                                    Skip Turn
+                                    Skip · Pass Same Word
                                 </button>
                             </div>
                         </div>
@@ -533,42 +464,18 @@ export default function AdminVaultPage() {
 
                         {/* Point & Pricing Economics */}
                         <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800">
+                            <div className="col-span-2 rounded-lg border border-emerald-700/50 bg-emerald-950/30 p-3 text-xs text-slate-300">
+                                <p className="font-black text-emerald-300">Wordle reward rules</p>
+                                <p>Maximum {store.config.wordleMaxGuesses} guesses. Points are awarded only when the selected team solves the puzzle; the reward decreases with every guess and is capped by difficulty.</p>
+                            </div>
                             <label className="text-xs">
-                                Wordle New Yellow Pts
+                                Wordle Maximum Guesses
                                 <input
                                     type="number"
-                                    value={store.config.wordleNewYellowPoints}
-                                    onChange={(e) =>
-                                        store.updateConfig({
-                                            wordleNewYellowPoints: Number(e.target.value),
-                                        })
-                                    }
-                                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
-                                />
-                            </label>
-                            <label className="text-xs">
-                                Wordle New Green Pts
-                                <input
-                                    type="number"
-                                    value={store.config.wordleNewGreenPoints}
-                                    onChange={(e) =>
-                                        store.updateConfig({
-                                            wordleNewGreenPoints: Number(e.target.value),
-                                        })
-                                    }
-                                    className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
-                                />
-                            </label>
-                            <label className="text-xs">
-                                Wordle Full Solve Bonus
-                                <input
-                                    type="number"
-                                    value={store.config.wordleExactWordBonus}
-                                    onChange={(e) =>
-                                        store.updateConfig({
-                                            wordleExactWordBonus: Number(e.target.value),
-                                        })
-                                    }
+                                    min="1"
+                                    max="6"
+                                    value={store.config.wordleMaxGuesses}
+                                    onChange={(e) => store.updateConfig({ wordleMaxGuesses: Math.max(1, Math.min(6, Number(e.target.value) || 6)) })}
                                     className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
                                 />
                             </label>
@@ -715,10 +622,13 @@ export default function AdminVaultPage() {
                                     onChange={(e) => setWDef(e.target.value)}
                                     className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm"
                                 />
+                                <select value={wDifficulty} onChange={(e) => setWDifficulty(e.target.value as 'easy' | 'medium' | 'hard')} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-sm">
+                                    <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+                                </select>
                                 <button
                                     onClick={() => {
                                         if (!wWord || !wDef) return;
-                                        store.addWordle(wWord, wDef);
+                                        store.addWordle(wWord, wDef, wDifficulty);
                                         setWWord('');
                                         setWDef('');
                                     }}

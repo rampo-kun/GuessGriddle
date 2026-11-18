@@ -38,11 +38,15 @@ export interface WordleGuess {
     pointsByLetter: number[];
 }
 
+export type WordleDifficulty = 'easy' | 'medium' | 'hard';
+
 export interface WordlePuzzle {
     id: string;
     number: number;
     targetWord: string; // Secret answer; never render its length on the projector
     definition: string;
+    difficulty: WordleDifficulty;
+    assignedTeamId?: string;
     isCompleted: boolean;
     guesses: WordleGuess[];
     discoveredGreenIndices: number[]; // Correct answer positions already rewarded
@@ -52,9 +56,7 @@ export interface WordlePuzzle {
 
 export interface GameConfig {
     // Wordle scoring
-    wordleExactWordBonus: number;
-    wordleNewGreenPoints: number;
-    wordleNewYellowPoints: number;
+    wordleMaxGuesses: number;
     // Round 2 economics
     r2BuyCost: number;
     r2AssignCost: number;
@@ -80,7 +82,7 @@ export interface GameState {
 
     wordles: WordlePuzzle[];
     activeWordleId: string | null;
-    wordleCountCompleted: number; // Drives circular queue rotation
+    wordleCountCompleted: number; // Number of Wordle challenges completed
 
     // Round 2 state
     r2TurnIndex: number;
