@@ -57,6 +57,9 @@ export interface WordlePuzzle {
 export interface GameConfig {
     // Wordle scoring
     wordleMaxGuesses: number;
+    roundTimerSeconds: number;
+    wordleNewGreenPoints: number;
+    wordleNewYellowPoints: number;
     // Round 2 economics
     r2BuyCost: number;
     r2AssignCost: number;
@@ -91,4 +94,6 @@ export interface GameState {
     r2LastActionBanner: string | null;
 
     config: GameConfig;
+    roundTimerStartedAt: number | null;
+    roundTimerPhase: 'idle' | 'thinking' | 'answer';
 }

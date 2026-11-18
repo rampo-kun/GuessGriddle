@@ -141,6 +141,24 @@ export default function AdminVaultPage() {
                             1. Jeopardy & Guesstimate Control
                         </h2>
 
+                        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 space-y-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <p className="text-sm font-black text-amber-300">Round 1 thinking timer</p>
+                                    <p className="text-xs text-slate-400">When it reaches zero, the team still gets time to say its answer and the host can enter it.</p>
+                                </div>
+                                <div className="text-xs font-bold text-amber-200">{store.roundTimerPhase === 'thinking' ? 'THINKING' : store.roundTimerPhase === 'answer' ? 'ANSWER NOW' : 'IDLE'}</div>
+                            </div>
+                            <label className="block text-xs font-bold text-slate-300">Timer duration (seconds)
+                                <input type="number" min="10" max="180" value={store.config.roundTimerSeconds} onChange={(e) => store.updateConfig({ roundTimerSeconds: Math.max(10, Math.min(180, Number(e.target.value) || 45)) })} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2" />
+                            </label>
+                            <div className="flex gap-2">
+                                <button onClick={() => store.startRoundTimer()} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold">Restart thinking time</button>
+                                <button onClick={() => store.endThinkingTime()} disabled={store.roundTimerPhase !== 'thinking'} className="rounded-lg bg-rose-700 disabled:opacity-40 px-3 py-2 text-xs font-bold">End thinking time</button>
+                                <button onClick={() => store.resetRoundTimer()} className="rounded-lg bg-slate-700 px-3 py-2 text-xs font-bold">Hide timer</button>
+                            </div>
+                        </div>
+
                         <div className="mb-4 flex items-center gap-3">
                             <span className="text-sm text-slate-400">Active Team:</span>
                             <select
@@ -222,16 +240,13 @@ export default function AdminVaultPage() {
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
                         <div>
                             <h2 className="text-xl font-black text-emerald-400">2. Wordle Bonus Challenge</h2>
-                            <p className="text-xs text-slate-400 mt-1">Choose the team and difficulty. Only the selected team submits guesses; Jeopardy turn order is untouched. Each team gets one Wordle bonus challenge, preventing repeated easy-puzzle farming.</p>
+                            <p className="text-xs text-slate-400 mt-1">Choose any team and difficulty. A team may play multiple different Wordle puzzles; each puzzle can only be assigned once.</p>
                         </div>
 
                         <label className="block text-sm font-bold text-slate-300">
                             Team playing this Wordle
                             <select value={selectedWordleTeamId} onChange={(e) => setWordleTeamId(e.target.value)} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2">
-                                {store.teams.map((team) => {
-                                    const hasPlayed = store.wordles.some((puzzle) => puzzle.assignedTeamId === team.id);
-                                    return <option key={team.id} value={team.id}>{team.name}{hasPlayed ? ' · Wordle used' : ''}</option>;
-                                })}
+                                {store.teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
                             </select>
                         </label>
 
@@ -240,11 +255,10 @@ export default function AdminVaultPage() {
                                 <h3 className="text-xs font-black uppercase tracking-widest text-amber-300">{difficulty} · {difficulty === 'easy' ? '90' : difficulty === 'medium' ? '130' : '180'} max points</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {store.wordles.filter((p) => (p.difficulty ?? 'medium') === difficulty).map((puzzle) => {
-                                        const teamUsedAnotherPuzzle = store.wordles.some((p) => p.assignedTeamId === selectedWordleTeamId && p.id !== puzzle.id);
                                         const puzzleAssignedToAnotherTeam = Boolean(puzzle.assignedTeamId && puzzle.assignedTeamId !== selectedWordleTeamId);
                                         return (
-                                        <button key={puzzle.id} disabled={puzzle.isCompleted || !selectedWordleTeamId || teamUsedAnotherPuzzle || puzzleAssignedToAnotherTeam} onClick={() => store.openWordle(puzzle.id, selectedWordleTeamId)} className={`px-3 py-2 rounded-lg border text-sm font-bold ${puzzle.isCompleted ? 'bg-slate-950 border-slate-700 text-slate-500' : 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100 hover:bg-emerald-900'}`}>
-                                            #{puzzle.number} · {puzzle.targetWord} {puzzle.isCompleted ? '✓' : teamUsedAnotherPuzzle ? '· Team used' : puzzleAssignedToAnotherTeam ? '· Assigned' : ''}
+                                        <button key={puzzle.id} disabled={puzzle.isCompleted || !selectedWordleTeamId || puzzleAssignedToAnotherTeam} onClick={() => store.openWordle(puzzle.id, selectedWordleTeamId)} className={`px-3 py-2 rounded-lg border text-sm font-bold ${puzzle.isCompleted ? 'bg-slate-950 border-slate-700 text-slate-500' : 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100 hover:bg-emerald-900'}`}>
+                                            #{puzzle.number} · {puzzle.targetWord} {puzzle.isCompleted ? '✓' : puzzleAssignedToAnotherTeam ? '· Assigned' : ''}
                                         </button>
                                     )})}
                                 </div>
@@ -257,12 +271,12 @@ export default function AdminVaultPage() {
                                     <div>
                                         <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
-                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Points only on a correct solve</p>
+                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Green/yellow letter discoveries score immediately</p>
                                     </div>
                                     <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
                                 </div>
                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
-                                <div className="text-xs text-slate-400">Reward schedule (if solved): Easy 90/68/50/32/18/9 · Medium 130/98/72/46/26/13 · Hard 180/135/99/63/36/18. Incorrect guesses earn zero points.</div>
+                                <div className="text-xs text-slate-400">New green letters: base {store.config.wordleNewGreenPoints} pts · New yellow letters: base {store.config.wordleNewYellowPoints} pts · Easy 0.75×, Medium 1×, Hard 1.5×. Each puzzle has a difficulty-based points cap.</div>
                                 {!activeWordle.isCompleted && (
                                     <div className="flex flex-wrap gap-2">
                                         <input type="text" placeholder="Selected team's full-word guess" value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
@@ -478,6 +492,14 @@ export default function AdminVaultPage() {
                                     onChange={(e) => store.updateConfig({ wordleMaxGuesses: Math.max(1, Math.min(6, Number(e.target.value) || 6)) })}
                                     className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
                                 />
+                            </label>
+                            <label className="text-xs">
+                                Wordle Green Letter Points
+                                <input type="number" min="1" value={store.config.wordleNewGreenPoints} onChange={(e) => store.updateConfig({ wordleNewGreenPoints: Math.max(1, Number(e.target.value) || 15) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
+                            </label>
+                            <label className="text-xs">
+                                Wordle Yellow Letter Points
+                                <input type="number" min="1" value={store.config.wordleNewYellowPoints} onChange={(e) => store.updateConfig({ wordleNewYellowPoints: Math.max(1, Number(e.target.value) || 8) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
                             </label>
                             <label className="text-xs">
                                 R2 Buy Cost

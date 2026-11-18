@@ -2,6 +2,7 @@
 
 import { useGameStore } from '@/store/useGameStore';
 import { Trophy, Sparkles, CheckCircle2, XCircle } from 'lucide-react';
+import RoundTimer from '@/components/projector/RoundTimer';
 
 export default function JeopardyView() {
     const {
@@ -44,6 +45,8 @@ export default function JeopardyView() {
                     ))}
                 </div>
             </div>
+
+            {activeQuestion && <div className="shrink-0 flex justify-center"><RoundTimer /></div>}
 
             {/* Jeopardy Grid */}
             <div
@@ -116,33 +119,32 @@ export default function JeopardyView() {
                         </div>
 
                         {lastGuesstimateResult && (
-                            <div
-                                className={`mt-8 p-8 rounded-2xl border-2 ${lastGuesstimateResult.won
-                                        ? 'bg-[#dcebdd] border-[#28784b] text-[#155b37]'
-                                        : 'bg-[#f8dfd9] border-[#c83d2d] text-[#a82e22]'
-                                    }`}
-                            >
-                                <div className="flex items-center justify-center gap-3 text-xl md:text-3xl font-black mb-2">
-                                    {lastGuesstimateResult.won ? (
-                                        <>
-                                            <CheckCircle2 className="w-9 h-9" /> WITHIN RANGE! +
-                                            {lastGuesstimateResult.points} PTS
-                                        </>
-                                    ) : (
-                                        <>
-                                            <XCircle className="w-9 h-9" /> OUTSIDE RANGE! 0 PTS
-                                        </>
-                                    )}
+                            <div className={`mt-8 overflow-hidden rounded-3xl border-4 text-left shadow-2xl ${lastGuesstimateResult.won ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50'}`}>
+                                <div className={`flex flex-wrap items-center justify-between gap-3 px-6 py-5 ${lastGuesstimateResult.won ? 'bg-emerald-700 text-white' : 'bg-rose-700 text-white'}`}>
+                                    <div className="flex items-center gap-3">
+                                        {lastGuesstimateResult.won ? <CheckCircle2 className="h-10 w-10" /> : <XCircle className="h-10 w-10" />}
+                                        <div>
+                                            <p className="text-xs font-black uppercase tracking-[.22em] opacity-80">Official result · {lastGuesstimateResult.teamName}</p>
+                                            <h2 className="text-2xl md:text-4xl font-black">{lastGuesstimateResult.won ? 'That’s correct!' : 'Not quite!'}</h2>
+                                        </div>
+                                    </div>
+                                    <div className="rounded-xl bg-white/15 px-5 py-3 text-center">
+                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Points earned</p>
+                                        <p className="text-3xl font-black">{lastGuesstimateResult.points > 0 ? '+' : ''}{lastGuesstimateResult.points}</p>
+                                    </div>
                                 </div>
-                                <p className="text-base md:text-xl text-[#24211d] mt-2">
-                                    {lastGuesstimateResult.teamName} guessed:{' '}
-                                    <strong>
-                                        {lastGuesstimateResult.guess.toLocaleString()} {activeQuestion.unit}
-                                    </strong>{' '}
-                                    • Actual Answer:{' '}
-                                    <strong className="text-amber-400">
-                                        {lastGuesstimateResult.actual?.toLocaleString()} {activeQuestion.unit}
-                                    </strong>
+                                <div className="grid gap-3 p-5 sm:grid-cols-2">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                        <p className="text-[10px] font-black uppercase tracking-[.18em] text-slate-500">Team’s answer</p>
+                                        <p className="mt-2 break-words text-2xl md:text-3xl font-black text-slate-900">{lastGuesstimateResult.guess.toLocaleString()} <span className="text-base font-bold text-slate-500">{activeQuestion.unit}</span></p>
+                                    </div>
+                                    <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4">
+                                        <p className="text-[10px] font-black uppercase tracking-[.18em] text-amber-800">Actual answer</p>
+                                        <p className="mt-2 break-words text-2xl md:text-3xl font-black text-slate-900">{lastGuesstimateResult.actual?.toLocaleString()} <span className="text-base font-bold text-slate-500">{activeQuestion.unit}</span></p>
+                                    </div>
+                                </div>
+                                <p className="px-5 pb-5 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                                    {lastGuesstimateResult.won ? 'Within the accepted range · Jeopardy points awarded' : 'Outside the accepted range · No points awarded'}
                                 </p>
                             </div>
                         )}

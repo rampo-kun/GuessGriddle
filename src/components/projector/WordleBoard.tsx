@@ -1,6 +1,7 @@
 'use client';
 
 import { useGameStore } from '@/store/useGameStore';
+import RoundTimer from '@/components/projector/RoundTimer';
 
 export default function WordleBoard() {
     const { wordles, activeWordleId, teams, config } = useGameStore();
@@ -9,12 +10,6 @@ export default function WordleBoard() {
 
     const activeTeam = teams.find((team) => team.id === puzzle.assignedTeamId);
     const maxGuesses = config.wordleMaxGuesses ?? 6;
-    const rewardByDifficulty = {
-        easy: [90, 68, 50, 32, 18, 9],
-        medium: [130, 98, 72, 46, 26, 13],
-        hard: [180, 135, 99, 63, 36, 18],
-    } as const;
-    const nextGuessReward = rewardByDifficulty[puzzle.difficulty ?? 'medium'][puzzle.guesses.length] ?? 0;
 
     const statusStyle = {
         correct: 'bg-[#237747] border-[#155b35] text-white',
@@ -35,6 +30,8 @@ export default function WordleBoard() {
                 </div>
             </header>
 
+            <section className="shrink-0 flex justify-center"><RoundTimer /></section>
+
             <section className="shrink-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(230px,320px)] gap-3">
                 <div className="rounded-2xl border-2 border-[#d8c8a8] bg-[#fffaf0] px-5 py-3 md:px-6 md:py-4 shadow-[0_4px_0_rgba(48,59,80,.12)] min-w-0">
                     <p className="text-[10px] md:text-xs font-black uppercase tracking-[.2em] text-[#a82e22]">Decode the clue</p>
@@ -49,8 +46,8 @@ export default function WordleBoard() {
             </section>
 
             <section className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d8c8a8] bg-[#fff7e8] px-3 py-2 text-xs font-bold text-[#514a40]">
-                <span>ONE TEAM CHALLENGE · {puzzle.difficulty ?? 'medium'} WORDLE</span>
-                <span>Potential solve reward this guess: {puzzle.isCompleted ? 0 : nextGuessReward} points</span>
+                <span>TEAM CHALLENGE · {puzzle.difficulty ?? 'medium'} WORDLE</span>
+                <span>New green/yellow letters earn points · {puzzle.difficulty ?? 'medium'} difficulty multiplier</span>
             </section>
 
             <section className="wordle-history flex-1 min-h-0 rounded-2xl border-2 border-[#d8c8a8] bg-[#fffaf0] p-3 md:p-4 flex flex-col shadow-[0_5px_0_rgba(48,59,80,.10)]">
@@ -73,7 +70,7 @@ export default function WordleBoard() {
                                 <article key={`${guess.teamId}-${index}`} className="rounded-xl border border-[#e0d5c2] bg-white px-3 py-2 md:px-4 md:py-2.5">
                                     <div className="mb-1.5 flex items-center justify-between gap-3">
                                         <span className="min-w-0 truncate text-xs md:text-sm font-black text-[#303b50]">{index + 1}. {team?.name ?? 'Team'}</span>
-                                        <span className="shrink-0 whitespace-nowrap text-xs md:text-sm font-black text-[#155b37]">+{guess.pointsEarned} pts</span>
+                                        <span className="shrink-0 whitespace-nowrap text-xs md:text-sm font-black text-[#155b37]">+{guess.pointsEarned} pts · letter discoveries</span>
                                     </div>
                                     <div className="flex flex-wrap gap-1 md:gap-1.5">
                                         {guess.word.split('').map((letter, letterIndex) => (

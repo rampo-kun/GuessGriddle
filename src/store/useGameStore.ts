@@ -17,6 +17,9 @@ const CHANNEL_NAME = 'guessgriddle_sync_channel';
 
 const DEFAULT_CONFIG: GameConfig = {
     wordleMaxGuesses: 6,
+    roundTimerSeconds: 45,
+    wordleNewGreenPoints: 15,
+    wordleNewYellowPoints: 8,
     r2BuyCost: 100,
     r2AssignCost: 200,
     r2StealCost: 300,
@@ -119,6 +122,9 @@ interface GameActions {
     removeTeam: (id: string) => void;
     adjustTeamScore: (id: string, delta: number) => void;
     setJeopardyTurn: (index: number) => void;
+    startRoundTimer: () => void;
+    endThinkingTime: () => void;
+    resetRoundTimer: () => void;
 
     // Jeopardy Actions
     addJeopardyQuestion: (q: Omit<JeopardyQuestion, 'id' | 'isCompleted'>) => void;
@@ -165,6 +171,8 @@ const INITIAL_STATE: GameState = {
     usedPoolWords: [],
     r2LastActionBanner: null,
     config: DEFAULT_CONFIG,
+    roundTimerStartedAt: null,
+    roundTimerPhase: 'idle',
 };
 
 function broadcastState(state: GameState) {
@@ -199,6 +207,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 usedPoolWords: next.usedPoolWords,
                 r2LastActionBanner: next.r2LastActionBanner,
                 config: next.config,
+                roundTimerStartedAt: next.roundTimerStartedAt,
+                roundTimerPhase: next.roundTimerPhase,
             };
             broadcastState(pureState);
             return next;
@@ -250,6 +260,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
                     }
                     if (parsed.config) parsed.config = { ...DEFAULT_CONFIG, ...parsed.config };
+                    parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
+                    parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
                     if (Array.isArray(parsed.wordles) &&
                         parsed.wordles.length === SHIPPED_DEFAULT_WORDLE_WORDS.length &&
                         parsed.wordles.every((puzzle: WordlePuzzle) => (puzzle.guesses ?? []).length === 0) &&
@@ -306,6 +318,18 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             })),
 
         setJeopardyTurn: (index) => commit(() => ({ jeopardyTurnIndex: index })),
+        startRoundTimer: () => commit((s) => ({
+            roundTimerStartedAt: Date.now(),
+            roundTimerPhase: 'thinking',
+        })),
+        endThinkingTime: () => commit((s) => ({
+            roundTimerStartedAt: null,
+            roundTimerPhase: 'answer',
+        })),
+        resetRoundTimer: () => commit(() => ({
+            roundTimerStartedAt: null,
+            roundTimerPhase: 'idle',
+        })),
 
         addJeopardyQuestion: (q) =>
             commit((s) => ({
@@ -321,9 +345,11 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             })),
 
         selectJeopardyTile: (id) =>
-            commit(() => ({
+            commit((s) => ({
                 activeJeopardyId: id,
                 lastGuesstimateResult: null,
+                roundTimerStartedAt: id ? Date.now() : null,
+                roundTimerPhase: id ? 'thinking' : 'idle',
             })),
 
         submitGuesstimate: (guess) =>
@@ -362,6 +388,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         points: awarded,
                         actual: q.actualAnswer,
                     },
+                    roundTimerStartedAt: null,
+                    roundTimerPhase: 'idle',
                 };
             }),
 
@@ -394,13 +422,14 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
         openWordle: (id, teamId) =>
             commit((s) => {
                 const puzzle = s.wordles.find((w) => w.id === id);
-                const teamAlreadyPlayed = s.wordles.some((w) => w.assignedTeamId === teamId && w.id !== id);
-                if (!puzzle || puzzle.isCompleted || teamAlreadyPlayed ||
+                if (!puzzle || puzzle.isCompleted ||
                     (puzzle.assignedTeamId && puzzle.assignedTeamId !== teamId) ||
                     !s.teams.some((team) => team.id === teamId)) return {};
                 return {
                     activeWordleId: id,
                     activeView: 'WORDLE_PLAY',
+                    roundTimerStartedAt: Date.now(),
+                    roundTimerPhase: 'thinking',
                     wordles: s.wordles.map((w) =>
                         w.id === id ? { ...w, assignedTeamId: teamId } : w
                     ),
@@ -416,34 +445,37 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 const activeTeam = s.teams.find((team) => team.id === puzzle.assignedTeamId);
                 if (!activeTeam) return {};
 
+                const difficultyMultiplier = puzzle.difficulty === 'hard' ? 1.5 : puzzle.difficulty === 'medium' ? 1 : 0.75;
                 const result = evaluateWordleGuess(
                     normalizedWord,
                     puzzle.targetWord,
-                    [],
-                    [],
-                    { wordleNewGreenPoints: 0, wordleNewYellowPoints: 0 }
+                    puzzle.discoveredGreenIndices ?? [],
+                    puzzle.discoveredLetters ?? [],
+                    {
+                        wordleNewGreenPoints: Math.round(s.config.wordleNewGreenPoints * difficultyMultiplier),
+                        wordleNewYellowPoints: Math.round(s.config.wordleNewYellowPoints * difficultyMultiplier),
+                    }
                 );
                 if (!result.valid || normalizedWord.length !== puzzle.targetWord.length) return {};
 
-                // Points are awarded only when the assigned team solves the puzzle.
-                // Each puzzle has a fixed difficulty ceiling and a declining attempt schedule.
-                const rewardByDifficulty = {
-                    easy: [90, 68, 50, 32, 18, 9],
-                    medium: [130, 98, 72, 46, 26, 13],
-                    hard: [180, 135, 99, 63, 36, 18],
-                } as const;
-                const solved = result.solved;
-                const pointsEarned = solved
-                    ? rewardByDifficulty[puzzle.difficulty ?? 'medium'][puzzle.guesses.length] ?? 0
-                    : 0;
+                const pointsCap = puzzle.difficulty === 'hard' ? 180 : puzzle.difficulty === 'medium' ? 130 : 90;
+                const pointsAlreadyEarned = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
+                const pointsEarned = Math.min(result.pointsEarned, Math.max(0, pointsCap - pointsAlreadyEarned));
+                const pointsByLetter = result.pointsByLetter.map((points) => points);
+                let remainingCap = Math.max(0, pointsCap - pointsAlreadyEarned);
+                for (let i = 0; i < pointsByLetter.length; i += 1) {
+                    const awarded = Math.min(pointsByLetter[i], remainingCap);
+                    pointsByLetter[i] = awarded;
+                    remainingCap -= awarded;
+                }
                 const updatedGuesses = [...puzzle.guesses, {
                     teamId: activeTeam.id,
                     word: normalizedWord,
                     statuses: result.statuses,
                     pointsEarned,
-                    pointsByLetter: result.pointsByLetter,
+                    pointsByLetter,
                 }];
-                const isDone = solved || updatedGuesses.length >= s.config.wordleMaxGuesses;
+                const isDone = result.solved || updatedGuesses.length >= s.config.wordleMaxGuesses;
 
                 return {
                     teams: pointsEarned > 0
@@ -454,9 +486,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     wordles: s.wordles.map((w) => w.id === puzzle.id ? {
                         ...w,
                         guesses: updatedGuesses,
+                        discoveredGreenIndices: result.updatedGreenIndices,
+                        discoveredLetters: result.updatedDiscoveredLetters,
                         isCompleted: isDone,
                     } : w),
                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
+                    roundTimerStartedAt: isDone ? null : Date.now(),
+                    roundTimerPhase: isDone ? 'idle' : 'thinking',
                 };
             }),
 
@@ -468,6 +504,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 wordleCountCompleted: s.wordleCountCompleted + (s.wordles.find((w) => w.id === s.activeWordleId)?.isCompleted ? 0 : 1),
                 activeWordleId: null,
                 activeView: 'WORDLE_SELECT',
+                roundTimerStartedAt: null,
+                roundTimerPhase: 'idle',
             })),
 
         // ROUND 2: WORD AUCTION & STEAL
