@@ -19,3 +19,10 @@ button,a{transition:transform .16s ease,box-shadow .16s ease,background-color .1
 /* Subtle paper grain without external image assets. */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");mix-blend-mode:multiply}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* Contrast fixes for projector labels and Wordle feedback on the warm-paper theme. */
+.wordle-team-name,.wordle-guess-label{color:#29251f!important}
+.text-slate-600{color:#514a40!important}
+.text-slate-700{color:#403a32!important}
+.text-emerald-800{color:#155b37!important}
+.text-amber-800{color:#805600!important}

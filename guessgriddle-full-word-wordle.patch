@@ -1,0 +1,473 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index a8d2107..8bc16a9 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -19,3 +19,10 @@ button,a{transition:transform .16s ease,box-shadow .16s ease,background-color .1
+ /* Subtle paper grain without external image assets. */
+ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+ @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
++
++/* Contrast fixes for projector labels and Wordle feedback on the warm-paper theme. */
++.wordle-team-name,.wordle-guess-label{color:#29251f!important}
++.text-slate-600{color:#514a40!important}
++.text-slate-700{color:#403a32!important}
++.text-emerald-800{color:#155b37!important}
++.text-amber-800{color:#805600!important}
+diff --git a/src/app/x-admin-vault/page.tsx b/src/app/x-admin-vault/page.tsx
+index 2afea30..c3dbf0a 100644
+--- a/src/app/x-admin-vault/page.tsx
++++ b/src/app/x-admin-vault/page.tsx
+@@ -11,8 +11,7 @@ export default function AdminVaultPage() {
+     // Local form states
+     const [newTeamName, setNewTeamName] = useState('');
+     const [guessInput, setGuessInput] = useState('');
+-    const [wordleLetterInput, setWordleLetterInput] = useState('');
+-    const [wordlePositionInput, setWordlePositionInput] = useState('1');
++    const [wordleGuessInput, setWordleGuessInput] = useState('');
+ 
+     // New Question / Wordle builders
+     const [qCat, setQCat] = useState('');
+@@ -213,7 +212,7 @@ export default function AdminVaultPage() {
+ 
+                     {/* Wordle Control */}
+                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+-                        <h2 className="text-xl font-black mb-4 text-emerald-400">
++                        <h2 className="text-xl font-black mb-4 text-emerald-700">
+                             2. Wordle Circular Queue Control
+                         </h2>
+ 
+@@ -223,8 +222,8 @@ export default function AdminVaultPage() {
+                                     key={w.id}
+                                     onClick={() => store.openWordle(w.id)}
+                                     className={`px-4 py-2 rounded-xl font-bold text-sm border ${w.isCompleted
+-                                            ? 'bg-slate-950 border-slate-800 text-slate-500'
+-                                            : 'bg-emerald-900/40 border-emerald-500 text-emerald-300'
++                                            ? 'bg-slate-950 border-slate-800 text-slate-600'
++                                            : 'bg-emerald-900/40 border-emerald-500 text-emerald-800'
+                                         }`}
+                                 >
+                                     Wordle #{w.number} ({w.targetWord})
+@@ -234,45 +233,46 @@ export default function AdminVaultPage() {
+ 
+                         {activeWordle && (
+                             <div className="bg-slate-950 border border-emerald-500 rounded-xl p-4">
+-                                <div className="flex justify-between items-center mb-3">
+-                                    <span className="text-sm font-bold text-amber-400">
+-                                        SECRET WORD: {activeWordle.targetWord} ({activeWordle.targetWord.length}{' '}
+-                                        letters)
++                                <div className="flex justify-between items-center mb-3 gap-3">
++                                    <span className="text-sm font-bold text-amber-700">
++                                        SECRET WORD: {activeWordle.targetWord}
+                                     </span>
+                                     <button
+                                         onClick={() => store.closeWordleAsComplete()}
+-                                        className="text-xs bg-rose-600 px-3 py-1 rounded font-bold"
++                                        className="text-xs bg-rose-600 text-white px-3 py-1 rounded font-bold"
+                                     >
+                                         Mark Done & Return to Grid
+                                     </button>
+                                 </div>
+ 
+-                                <div className="mb-3 text-xs text-slate-400">
+-                                    Enter the team's chosen letter and position. The projector never displays the answer length.
++                                <div className="mb-3 text-xs text-slate-600">
++                                    Enter the team's complete word. The projector will not reveal the answer length.
++                                    Green = correct position; yellow = correct letter, wrong position. Each yellow
++                                    letter can score only once per puzzle, and each green position can score only once.
+                                 </div>
+                                 <div className="flex flex-wrap gap-2">
+                                     <input
+-                                        type="text" maxLength={1} placeholder="Letter (A–Z)"
+-                                        value={wordleLetterInput}
+-                                        onChange={(e) => setWordleLetterInput(e.target.value.replace(/[^a-z]/gi, '').slice(0, 1).toUpperCase())}
+-                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono text-center"
+-                                    />
+-                                    <input
+-                                        type="number" min={1} placeholder="Position"
+-                                        value={wordlePositionInput}
+-                                        onChange={(e) => setWordlePositionInput(e.target.value)}
+-                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2"
++                                        type="text"
++                                        placeholder="Team's full-word guess"
++                                        value={wordleGuessInput}
++                                        onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())}
++                                        onKeyDown={(e) => {
++                                            if (e.key === 'Enter' && wordleGuessInput.trim()) {
++                                                store.submitWordleGuess(wordleGuessInput);
++                                                setWordleGuessInput('');
++                                            }
++                                        }}
++                                        className="min-w-0 flex-1 bg-white border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono"
+                                     />
+                                     <button
++                                        disabled={!wordleGuessInput.trim()}
+                                         onClick={() => {
+-                                            const position = Number(wordlePositionInput);
+-                                            if (!wordleLetterInput || !Number.isInteger(position) || position < 1) return;
+-                                            store.submitWordleGuess(wordleLetterInput, position);
+-                                            setWordleLetterInput('');
++                                            store.submitWordleGuess(wordleGuessInput);
++                                            setWordleGuessInput('');
+                                         }}
+-                                        className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-lg font-bold"
++                                        className="bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-5 py-2 rounded-lg font-bold"
+                                     >
+-                                        Submit Letter
++                                        Submit Word
+                                     </button>
+                                 </div>
+                             </div>
+diff --git a/src/components/projector/WordleBoard.tsx b/src/components/projector/WordleBoard.tsx
+index 1785910..84fc1d5 100644
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -12,54 +12,67 @@ export default function WordleBoard() {
+     const queueOrder = teams.map((_, offset) => teams[(puzzle.startingTeamIndex + offset) % teams.length]);
+ 
+     const statusStyle = {
+-        correct: 'bg-emerald-600 border-emerald-400 text-white',
+-        present: 'bg-amber-500 border-amber-300 text-slate-950',
+-        absent: 'bg-slate-800 border-slate-700 text-slate-300',
++        correct: 'bg-emerald-700 border-emerald-600 text-white',
++        present: 'bg-amber-400 border-amber-500 text-slate-950',
++        absent: 'bg-slate-600 border-slate-500 text-white',
+     };
+ 
+     return (
+-        <div className="min-h-screen bg-slate-950 text-white p-8 flex flex-col items-center gap-7">
+-            <div className="max-w-4xl w-full bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 text-center shadow-xl">
+-                <div className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
+-                    Wordle #{puzzle.number} • Position Challenge
++        <div className="min-h-screen bg-slate-950 text-slate-900 p-8 flex flex-col items-center gap-7">
++            <div className="max-w-4xl w-full bg-slate-900 border border-emerald-700 rounded-3xl p-6 text-center shadow-xl">
++                <div className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-2">
++                    Wordle #{puzzle.number} • Full-Word Challenge
+                 </div>
+-                <h2 className="text-2xl md:text-3xl font-bold text-white">“{puzzle.definition}”</h2>
+-                <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-400">
+-                    <span>New Yellow: +{config.wordleNewYellowPoints} pts</span>
++                <h2 className="text-2xl md:text-3xl font-bold text-slate-900">“{puzzle.definition}”</h2>
++                <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-700">
++                    <span>New Yellow Letter: +{config.wordleNewYellowPoints} pts</span>
+                     <span>•</span>
+-                    <span>New Green: +{config.wordleNewGreenPoints} pts</span>
++                    <span>New Green Position: +{config.wordleNewGreenPoints} pts</span>
++                    <span>•</span>
++                    <span>Full Solve: +{config.wordleExactWordBonus} pts</span>
+                 </div>
+-                <p className="mt-3 text-sm font-bold text-amber-300">Choose one letter and one position per turn. The answer length is hidden.</p>
++                <p className="mt-3 text-sm font-bold text-amber-800">
++                    Submit a complete word. The answer length is hidden.
++                </p>
+             </div>
+ 
+             <div className="flex flex-wrap justify-center items-center gap-3">
+-                <span className="text-sm uppercase tracking-wider text-slate-400 font-bold">Turn Order:</span>
++                <span className="text-sm uppercase tracking-wider text-slate-700 font-bold">Turn Order:</span>
+                 {queueOrder.map((team, i) => (
+                     <div key={team.id} className={`px-4 py-1.5 rounded-full text-sm font-bold border ${
+                         !puzzle.isCompleted && team.id === activeTeam?.id
+-                            ? 'bg-amber-500 text-slate-950 border-amber-300 scale-105'
+-                            : 'bg-slate-800 text-slate-300 border-slate-700'
++                            ? 'bg-amber-400 text-slate-950 border-amber-600 scale-105'
++                            : 'bg-white text-slate-800 border-slate-400'
+                     }`}>{i + 1}. {team.name}</div>
+                 ))}
+             </div>
+ 
+-            <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
++            <div className="w-full max-w-4xl rounded-2xl border border-slate-400 bg-white/90 p-5">
+                 <div className="flex justify-between items-center mb-4">
+-                    <span className="text-sm font-bold uppercase tracking-widest text-slate-400">Attempts</span>
+-                    <span className="text-sm text-slate-400">{puzzle.guesses.length} / 20</span>
++                    <span className="text-sm font-bold uppercase tracking-widest text-slate-700">Guesses</span>
++                    <span className="text-sm text-slate-700">{puzzle.guesses.length} / 20 attempts</span>
+                 </div>
+                 {puzzle.guesses.length === 0 ? (
+-                    <div className="py-10 text-center text-slate-500">No letters revealed yet. Let the guessing begin.</div>
++                    <div className="py-10 text-center text-slate-600">No guesses yet. Let the guessing begin.</div>
+                 ) : (
+                     <div className="space-y-3">
+                         {puzzle.guesses.map((guess, index) => {
+                             const team = teams.find((t) => t.id === guess.teamId);
+                             return (
+-                                <div key={`${guess.teamId}-${index}`} className="flex items-center gap-3 rounded-xl bg-slate-950 p-3">
+-                                    <span className="w-32 truncate text-sm font-bold text-slate-400">{team?.name ?? 'Team'}</span>
+-                                    <span className={`h-12 w-12 rounded-lg border-2 flex items-center justify-center text-2xl font-black ${statusStyle[guess.status]}`}>{guess.letter}</span>
+-                                    <span className="text-sm text-slate-300">Position {guess.position}</span>
+-                                    <span className="ml-auto text-sm font-bold text-indigo-300">+{guess.pointsEarned} pts</span>
++                                <div key={`${guess.teamId}-${index}`} className="flex flex-wrap items-center gap-3 rounded-xl bg-slate-100 p-3">
++                                    <span className="w-36 shrink-0 truncate text-sm font-bold text-slate-800">{team?.name ?? 'Team'}</span>
++                                    <div className="flex flex-wrap gap-1.5">
++                                        {guess.word.split('').map((letter, letterIndex) => (
++                                            <span
++                                                key={`${letter}-${letterIndex}`}
++                                                className={`h-10 min-w-9 px-2 rounded-md border-2 flex items-center justify-center text-lg font-black ${statusStyle[guess.statuses[letterIndex] ?? 'absent']}`}
++                                                title={guess.statuses[letterIndex] === 'correct' ? 'Correct position' : guess.statuses[letterIndex] === 'present' ? 'Letter exists elsewhere' : 'Letter not in answer'}
++                                            >
++                                                {letter}
++                                            </span>
++                                        ))}
++                                    </div>
++                                    <span className="ml-auto text-sm font-black text-emerald-800">+{guess.pointsEarned} pts</span>
+                                 </div>
+                             );
+                         })}
+@@ -68,15 +81,15 @@ export default function WordleBoard() {
+             </div>
+ 
+             <div className="flex flex-wrap justify-center gap-5 text-sm font-bold">
+-                <span className="text-emerald-400">■ Green: correct position</span>
+-                <span className="text-amber-400">■ Yellow: letter exists elsewhere</span>
+-                <span className="text-slate-400">■ Grey: letter not in answer</span>
++                <span className="text-emerald-800">■ Green: correct position</span>
++                <span className="text-amber-800">■ Yellow: letter exists elsewhere</span>
++                <span className="text-slate-700">■ Grey: letter not in answer</span>
+             </div>
+ 
+             {puzzle.isCompleted && (
+-                <div className="bg-emerald-950 border-2 border-emerald-500 px-8 py-4 rounded-2xl text-center">
+-                    <span className="text-slate-300 text-lg mr-3">Target Word:</span>
+-                    <span className="text-3xl font-black text-emerald-400 tracking-widest">{puzzle.targetWord}</span>
++                <div className="bg-emerald-100 border-2 border-emerald-700 px-8 py-4 rounded-2xl text-center">
++                    <span className="text-slate-800 text-lg mr-3">Target Word:</span>
++                    <span className="text-3xl font-black text-emerald-900 tracking-widest">{puzzle.targetWord}</span>
+                 </div>
+             )}
+         </div>
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index 61ea3d1..923b735 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -9,7 +9,7 @@ import {
+     Team,
+     WordlePuzzle,
+ } from '@/types/game';
+-import { evaluateWordlePosition } from '@/utils/wordleLogic';
++import { evaluateWordleGuess } from '@/utils/wordleLogic';
+ import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
+ 
+ const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
+@@ -121,7 +121,7 @@ interface GameActions {
+     addWordle: (targetWord: string, definition: string) => void;
+     deleteWordle: (id: string) => void;
+     openWordle: (id: string) => void;
+-    submitWordleGuess: (letter: string, position: number) => void;
++    submitWordleGuess: (word: string) => void;
+     closeWordleAsComplete: () => void;
+ 
+     // Round 2 Actions
+@@ -365,31 +365,48 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                 };
+             }),
+ 
+-        submitWordleGuess: (letter, position) =>
++        submitWordleGuess: (word) =>
+             commit((s) => {
+                 const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
+-                if (!puzzle || puzzle.guesses.length >= 20 || s.teams.length === 0) return {};
+-                const normalizedLetter = letter.toUpperCase().trim();
+-                if (!/^[A-Z]$/.test(normalizedLetter) || !Number.isInteger(position) || position < 1) return {};
+-                if (puzzle.guesses.some((g) => g.letter === normalizedLetter && g.position === position)) return {};
++                if (!puzzle || puzzle.isCompleted || puzzle.guesses.length >= 20 || s.teams.length === 0) return {};
++                const normalizedWord = word.toUpperCase().trim();
++                if (!/^[A-Z]+$/.test(normalizedWord)) return {};
++                if (puzzle.guesses.some((g) => g.word === normalizedWord)) return {};
+ 
+                 const activeTeamIdx = (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
+                 const activeTeam = s.teams[activeTeamIdx];
+-                const result = evaluateWordlePosition(normalizedLetter, position, puzzle.targetWord,
+-                    puzzle.discoveredGreenIndices, puzzle.discoveredLetters, s.config);
++                if (!activeTeam) return {};
++
++                const result = evaluateWordleGuess(
++                    normalizedWord,
++                    puzzle.targetWord,
++                    puzzle.discoveredGreenIndices ?? [],
++                    puzzle.discoveredLetters ?? [],
++                    s.config
++                );
+                 if (!result.valid) return {};
+ 
++                const exactBonus = result.solved ? s.config.wordleExactWordBonus : 0;
++                const totalPoints = result.pointsEarned + exactBonus;
+                 const updatedGuesses = [...puzzle.guesses, {
+-                    teamId: activeTeam.id, letter: normalizedLetter, position,
+-                    status: result.status, pointsEarned: result.pointsEarned,
++                    teamId: activeTeam.id,
++                    word: normalizedWord,
++                    statuses: result.statuses,
++                    pointsEarned: totalPoints,
++                    pointsByLetter: result.pointsByLetter,
+                 }];
+-                const isDone = result.updatedGreenIndices.length === puzzle.targetWord.length || updatedGuesses.length >= 20;
++                const isDone = result.solved || updatedGuesses.length >= 20;
+ 
+                 return {
+-                    teams: s.teams.map((t) => t.id === activeTeam.id ? { ...t, score: t.score + result.pointsEarned } : t),
++                    teams: s.teams.map((t) => t.id === activeTeam.id
++                        ? { ...t, score: t.score + totalPoints }
++                        : t),
+                     wordles: s.wordles.map((w) => w.id === puzzle.id ? {
+-                        ...w, guesses: updatedGuesses, discoveredGreenIndices: result.updatedGreenIndices,
+-                        discoveredLetters: result.updatedDiscoveredLetters, isCompleted: isDone,
++                        ...w,
++                        guesses: updatedGuesses,
++                        discoveredGreenIndices: result.updatedGreenIndices,
++                        discoveredLetters: result.updatedDiscoveredLetters,
++                        isCompleted: isDone,
+                     } : w),
+                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
+                 };
+diff --git a/src/types/game.ts b/src/types/game.ts
+index 4e13556..544b7ec 100644
+--- a/src/types/game.ts
++++ b/src/types/game.ts
+@@ -32,21 +32,21 @@ export interface JeopardyQuestion {
+ 
+ export interface WordleGuess {
+     teamId: string;
+-    letter: string;
+-    position: number; // One-based position selected by the team
+-    status: 'correct' | 'present' | 'absent';
++    word: string;
++    statuses: ('correct' | 'present' | 'absent')[];
+     pointsEarned: number;
++    pointsByLetter: number[];
+ }
+ 
+ export interface WordlePuzzle {
+     id: string;
+     number: number;
+-    targetWord: string; // Uppercase word; length is determined per puzzle
++    targetWord: string; // Secret answer; never render its length on the projector
+     definition: string;
+     isCompleted: boolean;
+     guesses: WordleGuess[];
+-    discoveredGreenIndices: number[]; // Zero-based positions already found green
+-    discoveredLetters: string[];      // Unique letters already discovered (yellow or green)
++    discoveredGreenIndices: number[]; // Correct answer positions already rewarded
++    discoveredLetters: string[];      // Letters already rewarded as yellow or green
+     startingTeamIndex: number;
+ }
+ 
+diff --git a/src/utils/wordleLogic.ts b/src/utils/wordleLogic.ts
+index 20658af..5d57e33 100644
+--- a/src/utils/wordleLogic.ts
++++ b/src/utils/wordleLogic.ts
+@@ -1,40 +1,89 @@
+-export function evaluateWordlePosition(
+-    letterRaw: string,
+-    position: number,
++export type WordleTileStatus = 'correct' | 'present' | 'absent';
++
++export interface WordleEvaluation {
++    valid: boolean;
++    statuses: WordleTileStatus[];
++    pointsByLetter: number[];
++    pointsEarned: number;
++    updatedGreenIndices: number[];
++    updatedDiscoveredLetters: string[];
++    solved: boolean;
++}
++
++/**
++ * Evaluates a complete-word guess using Wordle-style duplicate-letter handling.
++ * Yellow points are awarded once per distinct letter for the whole puzzle.
++ * Green points are awarded once per exact answer position for the whole puzzle.
++ */
++export function evaluateWordleGuess(
++    guessRaw: string,
+     targetRaw: string,
+     prevGreenIndices: number[],
+     prevDiscoveredLetters: string[],
+     config: { wordleNewGreenPoints: number; wordleNewYellowPoints: number }
+-) {
+-    const letter = letterRaw.toUpperCase().trim();
++): WordleEvaluation {
++    const guess = guessRaw.toUpperCase().trim();
+     const target = targetRaw.toUpperCase().trim();
+-    const index = position - 1;
+-    if (!/^[A-Z]$/.test(letter) || index < 0 || index >= target.length) {
+-        return { valid: false as const, status: 'absent' as const, pointsEarned: 0,
+-            updatedGreenIndices: prevGreenIndices, updatedDiscoveredLetters: prevDiscoveredLetters };
++    const invalid: WordleEvaluation = {
++        valid: false,
++        statuses: [],
++        pointsByLetter: [],
++        pointsEarned: 0,
++        updatedGreenIndices: prevGreenIndices,
++        updatedDiscoveredLetters: prevDiscoveredLetters,
++        solved: false,
++    };
++
++    if (!/^[A-Z]+$/.test(guess) || !/^[A-Z]+$/.test(target)) return invalid;
++
++    const statuses: WordleTileStatus[] = Array(guess.length).fill('absent');
++    const remaining = new Map<string, number>();
++    const greenIndices = new Set(prevGreenIndices);
++    const discoveredLetters = new Set(prevDiscoveredLetters);
++
++    // Mark greens first, then count only unmatched answer letters for yellows.
++    for (let i = 0; i < target.length; i += 1) {
++        if (guess[i] === target[i]) {
++            statuses[i] = 'correct';
++        } else {
++            remaining.set(target[i], (remaining.get(target[i]) ?? 0) + 1);
++        }
+     }
+ 
+-    const status = target[index] === letter
+-        ? 'correct' as const
+-        : target.includes(letter) ? 'present' as const : 'absent' as const;
+-    const greens = new Set(prevGreenIndices);
+-    const discovered = new Set(prevDiscoveredLetters);
+-    let pointsEarned = 0;
++    for (let i = 0; i < guess.length; i += 1) {
++        if (statuses[i] === 'correct') continue;
++        const count = remaining.get(guess[i]) ?? 0;
++        if (count > 0) {
++            statuses[i] = 'present';
++            remaining.set(guess[i], count - 1);
++        }
++    }
+ 
+-    if (status === 'correct') {
+-        if (!greens.has(index)) pointsEarned += config.wordleNewGreenPoints;
+-        greens.add(index);
+-        discovered.add(letter);
+-    } else if (status === 'present' && !discovered.has(letter)) {
+-        pointsEarned += config.wordleNewYellowPoints;
+-        discovered.add(letter);
++    const pointsByLetter = statuses.map(() => 0);
++    let pointsEarned = 0;
++    for (let i = 0; i < statuses.length; i += 1) {
++        const letter = guess[i];
++        if (statuses[i] === 'correct') {
++            if (!greenIndices.has(i)) {
++                pointsByLetter[i] = config.wordleNewGreenPoints;
++                pointsEarned += config.wordleNewGreenPoints;
++                greenIndices.add(i);
++            }
++            discoveredLetters.add(letter);
++        } else if (statuses[i] === 'present' && !discoveredLetters.has(letter)) {
++            pointsByLetter[i] = config.wordleNewYellowPoints;
++            pointsEarned += config.wordleNewYellowPoints;
++            discoveredLetters.add(letter);
++        }
+     }
+ 
+     return {
+-        valid: true as const,
+-        status,
++        valid: true,
++        statuses,
++        pointsByLetter,
+         pointsEarned,
+-        updatedGreenIndices: Array.from(greens),
+-        updatedDiscoveredLetters: Array.from(discovered),
++        updatedGreenIndices: Array.from(greenIndices),
++        updatedDiscoveredLetters: Array.from(discoveredLetters),
++        solved: guess === target,
+     };
+ }

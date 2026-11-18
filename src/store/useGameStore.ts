@@ -9,7 +9,7 @@ import {
     Team,
     WordlePuzzle,
 } from '@/types/game';
-import { evaluateWordlePosition } from '@/utils/wordleLogic';
+import { evaluateWordleGuess } from '@/utils/wordleLogic';
 import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
 
 const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
@@ -121,7 +121,7 @@ interface GameActions {
     addWordle: (targetWord: string, definition: string) => void;
     deleteWordle: (id: string) => void;
     openWordle: (id: string) => void;
-    submitWordleGuess: (letter: string, position: number) => void;
+    submitWordleGuess: (word: string) => void;
     closeWordleAsComplete: () => void;
 
     // Round 2 Actions
@@ -365,31 +365,48 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 };
             }),
 
-        submitWordleGuess: (letter, position) =>
+        submitWordleGuess: (word) =>
             commit((s) => {
                 const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
-                if (!puzzle || puzzle.guesses.length >= 20 || s.teams.length === 0) return {};
-                const normalizedLetter = letter.toUpperCase().trim();
-                if (!/^[A-Z]$/.test(normalizedLetter) || !Number.isInteger(position) || position < 1) return {};
-                if (puzzle.guesses.some((g) => g.letter === normalizedLetter && g.position === position)) return {};
+                if (!puzzle || puzzle.isCompleted || puzzle.guesses.length >= 20 || s.teams.length === 0) return {};
+                const normalizedWord = word.toUpperCase().trim();
+                if (!/^[A-Z]+$/.test(normalizedWord)) return {};
+                if (puzzle.guesses.some((g) => g.word === normalizedWord)) return {};
 
                 const activeTeamIdx = (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
                 const activeTeam = s.teams[activeTeamIdx];
-                const result = evaluateWordlePosition(normalizedLetter, position, puzzle.targetWord,
-                    puzzle.discoveredGreenIndices, puzzle.discoveredLetters, s.config);
+                if (!activeTeam) return {};
+
+                const result = evaluateWordleGuess(
+                    normalizedWord,
+                    puzzle.targetWord,
+                    puzzle.discoveredGreenIndices ?? [],
+                    puzzle.discoveredLetters ?? [],
+                    s.config
+                );
                 if (!result.valid) return {};
 
+                const exactBonus = result.solved ? s.config.wordleExactWordBonus : 0;
+                const totalPoints = result.pointsEarned + exactBonus;
                 const updatedGuesses = [...puzzle.guesses, {
-                    teamId: activeTeam.id, letter: normalizedLetter, position,
-                    status: result.status, pointsEarned: result.pointsEarned,
+                    teamId: activeTeam.id,
+                    word: normalizedWord,
+                    statuses: result.statuses,
+                    pointsEarned: totalPoints,
+                    pointsByLetter: result.pointsByLetter,
                 }];
-                const isDone = result.updatedGreenIndices.length === puzzle.targetWord.length || updatedGuesses.length >= 20;
+                const isDone = result.solved || updatedGuesses.length >= 20;
 
                 return {
-                    teams: s.teams.map((t) => t.id === activeTeam.id ? { ...t, score: t.score + result.pointsEarned } : t),
+                    teams: s.teams.map((t) => t.id === activeTeam.id
+                        ? { ...t, score: t.score + totalPoints }
+                        : t),
                     wordles: s.wordles.map((w) => w.id === puzzle.id ? {
-                        ...w, guesses: updatedGuesses, discoveredGreenIndices: result.updatedGreenIndices,
-                        discoveredLetters: result.updatedDiscoveredLetters, isCompleted: isDone,
+                        ...w,
+                        guesses: updatedGuesses,
+                        discoveredGreenIndices: result.updatedGreenIndices,
+                        discoveredLetters: result.updatedDiscoveredLetters,
+                        isCompleted: isDone,
                     } : w),
                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
                 };

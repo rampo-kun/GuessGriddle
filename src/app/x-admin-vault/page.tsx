@@ -11,8 +11,7 @@ export default function AdminVaultPage() {
     // Local form states
     const [newTeamName, setNewTeamName] = useState('');
     const [guessInput, setGuessInput] = useState('');
-    const [wordleLetterInput, setWordleLetterInput] = useState('');
-    const [wordlePositionInput, setWordlePositionInput] = useState('1');
+    const [wordleGuessInput, setWordleGuessInput] = useState('');
 
     // New Question / Wordle builders
     const [qCat, setQCat] = useState('');
@@ -213,7 +212,7 @@ export default function AdminVaultPage() {
 
                     {/* Wordle Control */}
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                        <h2 className="text-xl font-black mb-4 text-emerald-400">
+                        <h2 className="text-xl font-black mb-4 text-emerald-700">
                             2. Wordle Circular Queue Control
                         </h2>
 
@@ -223,8 +222,8 @@ export default function AdminVaultPage() {
                                     key={w.id}
                                     onClick={() => store.openWordle(w.id)}
                                     className={`px-4 py-2 rounded-xl font-bold text-sm border ${w.isCompleted
-                                            ? 'bg-slate-950 border-slate-800 text-slate-500'
-                                            : 'bg-emerald-900/40 border-emerald-500 text-emerald-300'
+                                            ? 'bg-slate-950 border-slate-800 text-slate-600'
+                                            : 'bg-emerald-900/40 border-emerald-500 text-emerald-800'
                                         }`}
                                 >
                                     Wordle #{w.number} ({w.targetWord})
@@ -234,45 +233,46 @@ export default function AdminVaultPage() {
 
                         {activeWordle && (
                             <div className="bg-slate-950 border border-emerald-500 rounded-xl p-4">
-                                <div className="flex justify-between items-center mb-3">
-                                    <span className="text-sm font-bold text-amber-400">
-                                        SECRET WORD: {activeWordle.targetWord} ({activeWordle.targetWord.length}{' '}
-                                        letters)
+                                <div className="flex justify-between items-center mb-3 gap-3">
+                                    <span className="text-sm font-bold text-amber-700">
+                                        SECRET WORD: {activeWordle.targetWord}
                                     </span>
                                     <button
                                         onClick={() => store.closeWordleAsComplete()}
-                                        className="text-xs bg-rose-600 px-3 py-1 rounded font-bold"
+                                        className="text-xs bg-rose-600 text-white px-3 py-1 rounded font-bold"
                                     >
                                         Mark Done & Return to Grid
                                     </button>
                                 </div>
 
-                                <div className="mb-3 text-xs text-slate-400">
-                                    Enter the team's chosen letter and position. The projector never displays the answer length.
+                                <div className="mb-3 text-xs text-slate-600">
+                                    Enter the team's complete word. The projector will not reveal the answer length.
+                                    Green = correct position; yellow = correct letter, wrong position. Each yellow
+                                    letter can score only once per puzzle, and each green position can score only once.
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <input
-                                        type="text" maxLength={1} placeholder="Letter (A–Z)"
-                                        value={wordleLetterInput}
-                                        onChange={(e) => setWordleLetterInput(e.target.value.replace(/[^a-z]/gi, '').slice(0, 1).toUpperCase())}
-                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono text-center"
-                                    />
-                                    <input
-                                        type="number" min={1} placeholder="Position"
-                                        value={wordlePositionInput}
-                                        onChange={(e) => setWordlePositionInput(e.target.value)}
-                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2"
+                                        type="text"
+                                        placeholder="Team's full-word guess"
+                                        value={wordleGuessInput}
+                                        onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && wordleGuessInput.trim()) {
+                                                store.submitWordleGuess(wordleGuessInput);
+                                                setWordleGuessInput('');
+                                            }
+                                        }}
+                                        className="min-w-0 flex-1 bg-white border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono"
                                     />
                                     <button
+                                        disabled={!wordleGuessInput.trim()}
                                         onClick={() => {
-                                            const position = Number(wordlePositionInput);
-                                            if (!wordleLetterInput || !Number.isInteger(position) || position < 1) return;
-                                            store.submitWordleGuess(wordleLetterInput, position);
-                                            setWordleLetterInput('');
+                                            store.submitWordleGuess(wordleGuessInput);
+                                            setWordleGuessInput('');
                                         }}
-                                        className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-lg font-bold"
+                                        className="bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-5 py-2 rounded-lg font-bold"
                                     >
-                                        Submit Letter
+                                        Submit Word
                                     </button>
                                 </div>
                             </div>

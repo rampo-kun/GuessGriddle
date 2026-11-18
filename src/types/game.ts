@@ -32,21 +32,21 @@ export interface JeopardyQuestion {
 
 export interface WordleGuess {
     teamId: string;
-    letter: string;
-    position: number; // One-based position selected by the team
-    status: 'correct' | 'present' | 'absent';
+    word: string;
+    statuses: ('correct' | 'present' | 'absent')[];
     pointsEarned: number;
+    pointsByLetter: number[];
 }
 
 export interface WordlePuzzle {
     id: string;
     number: number;
-    targetWord: string; // Uppercase word; length is determined per puzzle
+    targetWord: string; // Secret answer; never render its length on the projector
     definition: string;
     isCompleted: boolean;
     guesses: WordleGuess[];
-    discoveredGreenIndices: number[]; // Zero-based positions already found green
-    discoveredLetters: string[];      // Unique letters already discovered (yellow or green)
+    discoveredGreenIndices: number[]; // Correct answer positions already rewarded
+    discoveredLetters: string[];      // Letters already rewarded as yellow or green
     startingTeamIndex: number;
 }
 
