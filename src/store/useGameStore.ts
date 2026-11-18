@@ -23,35 +23,43 @@ const DEFAULT_CONFIG: GameConfig = {
     r2AssignCost: 200,
     r2StealCost: 300,
     r2StealRefundPercent: 50,
+    // Wiki Race words are recognizable Wikipedia pages with lots of useful cross-links.
     startingWordPool: [
-        'KALEIDOSCOPE',
-        'CHAMELEON',
-        'ESPRESSO',
-        'LABYRINTH',
-        'MONSOON',
-        'ORIGAMI',
+        'PIZZA',
+        'BARBIE',
+        'MONOPOLY',
+        'CAPTCHA',
+        'IKEA',
+        'OCTOPUS',
     ],
     auctionWordPool: [
-        'BLACK SWAN',
-        'MEME',
-        'BLOCKCHAIN',
-        'ALGORITHM',
-        'REGRESSION',
+        'ENRON',
+        'PONZI SCHEME',
+        'QR CODE',
+        'DEEPFAKE',
+        'DUNNING-KRUGER EFFECT',
         'PARETO PRINCIPLE',
-        'BAYESIAN INFERENCE',
-        'DATA VISUALIZATION',
-        'NEURAL NETWORK',
-        'CRYPTOGRAPHY',
-        'DOPAMINE',
-        'SCHADENFREUDE',
-        'PANGOLIN',
-        'BIOLUMINESCENCE',
-        'DEJA VU',
-        'LIMERENCE',
-        'PETRICHOR',
-        'TARDIGRADE',
+        'BITCOIN',
+        'MEME',
+        'TAMAGOTCHI',
+        'RUBE GOLDBERG MACHINE',
+        'BLACK FRIDAY',
+        'SPAM',
+        'ALGORITHM',
+        'RECOMMENDER SYSTEM',
+        'DATA MINING',
+        'BAYES’ THEOREM',
+        'TULIP MANIA',
+        'RUBBER DUCK DEBUGGING',
     ],
 };
+
+const LEGACY_STARTING_WORD_POOL = ['KALEIDOSCOPE', 'CHAMELEON', 'ESPRESSO', 'LABYRINTH', 'MONSOON', 'ORIGAMI'];
+const LEGACY_AUCTION_WORD_POOL = [
+    'BLACK SWAN', 'MEME', 'BLOCKCHAIN', 'ALGORITHM', 'REGRESSION', 'PARETO PRINCIPLE',
+    'BAYESIAN INFERENCE', 'DATA VISUALIZATION', 'NEURAL NETWORK', 'CRYPTOGRAPHY', 'DOPAMINE',
+    'SCHADENFREUDE', 'PANGOLIN', 'BIOLUMINESCENCE', 'DEJA VU', 'LIMERENCE', 'PETRICHOR', 'TARDIGRADE',
+];
 
 const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
     { id: 'j1', category: "SPORTS", points: 100, question: "Michael Phelps has more gold medals than some countries. How many Olympic golds did he win?", actualAnswer: 23, minLimit: 20, maxLimit: 26, unit: "gold medals", isCompleted: false },
@@ -226,6 +234,15 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         parsed.wordles = SAMPLE_WORDLES;
                         parsed.activeWordleId = null;
                         parsed.wordleCountCompleted = 0;
+                    }
+                    // Upgrade only the previous built-in Wiki Race bank; preserve any custom bank.
+                    if (parsed.config && Array.isArray(parsed.config.startingWordPool) &&
+                        JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL)) {
+                        parsed.config = { ...parsed.config, startingWordPool: DEFAULT_CONFIG.startingWordPool };
+                    }
+                    if (parsed.config && Array.isArray(parsed.config.auctionWordPool) &&
+                        JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(LEGACY_AUCTION_WORD_POOL)) {
+                        parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
                     }
                     set((prev) => ({ ...prev, ...parsed }));
                 } catch { }
