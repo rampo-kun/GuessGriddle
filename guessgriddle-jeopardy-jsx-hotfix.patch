@@ -1,0 +1,13 @@
+diff --git a/src/components/projector/JeopardyView.tsx b/src/components/projector/JeopardyView.tsx
+index 9e2f07d..52f0835 100644
+--- a/src/components/projector/JeopardyView.tsx
++++ b/src/components/projector/JeopardyView.tsx
+@@ -149,6 +149,6 @@ export default function JeopardyView() {
+                     </div>
+                 </div>
+             )}
+-        </main>
++        </div>
+     );
+ }
+\ No newline at end of file

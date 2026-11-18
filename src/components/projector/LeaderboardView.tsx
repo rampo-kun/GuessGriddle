@@ -8,34 +8,22 @@ export default function LeaderboardView() {
     const sorted = [...teams].sort((a, b) => b.score - a.score);
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white p-10 flex flex-col items-center justify-center">
-            <Trophy className="w-20 h-20 text-amber-400 mb-4" />
-            <h1 className="text-5xl font-black mb-2">Round 1 Standings</h1>
-            <p className="text-xl text-slate-400 mb-10">
-                Accumulated Points Heading Into Round 2
-            </p>
-
-            <div className="max-w-3xl w-full space-y-4">
+        <main className="h-screen w-screen overflow-hidden bg-[#f5e8cc] text-[#24211d] px-8 py-7 flex flex-col items-center justify-center">
+            <Trophy className="w-14 h-14 md:w-20 md:h-20 text-[#b8860b] mb-3" />
+            <p className="text-xs font-black uppercase tracking-[.24em] text-[#a82e22]">X-Insights · Live standings</p>
+            <h1 className="text-4xl md:text-6xl font-black mb-2 text-center">Round 1 Standings</h1>
+            <p className="text-base md:text-xl font-semibold text-[#62594d] mb-7 text-center">Accumulated points heading into Round 2</p>
+            <div className="max-w-4xl w-full grid gap-3">
                 {sorted.map((team, idx) => (
-                    <div
-                        key={team.id}
-                        className={`flex items-center justify-between p-6 rounded-2xl border-2 ${idx === 0
-                                ? 'bg-amber-500/20 border-amber-400 scale-105'
-                                : 'bg-slate-900 border-slate-800'
-                            }`}
-                    >
-                        <div className="flex items-center gap-5">
-                            <span className="text-3xl font-black text-slate-500 w-10">
-                                #{idx + 1}
-                            </span>
-                            <span className="text-3xl font-extrabold">{team.name}</span>
+                    <div key={team.id} className={`flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border-2 ${idx === 0 ? 'bg-[#f9e6a9] border-[#b8860b]' : 'bg-[#fff7e8] border-[#d8c8a8]'}`}>
+                        <div className="flex min-w-0 items-center gap-4">
+                            <span className="text-xl md:text-3xl font-black text-[#766e61] w-10">#{idx + 1}</span>
+                            <span className="truncate text-xl md:text-3xl font-extrabold text-[#303b50]">{team.name}</span>
                         </div>
-                        <span className="text-4xl font-black text-amber-400">
-                            {team.score} pts
-                        </span>
+                        <span className="shrink-0 text-2xl md:text-4xl font-black text-[#a82e22]">{team.score} pts</span>
                     </div>
                 ))}
             </div>
-        </div>
+        </main>
     );
 }
