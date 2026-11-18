@@ -32,8 +32,9 @@ export interface JeopardyQuestion {
 
 export interface WordleGuess {
     teamId: string;
-    word: string;
-    statuses: ('correct' | 'present' | 'absent')[];
+    letter: string;
+    position: number; // One-based position selected by the team
+    status: 'correct' | 'present' | 'absent';
     pointsEarned: number;
 }
 

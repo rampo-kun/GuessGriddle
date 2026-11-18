@@ -11,7 +11,8 @@ export default function AdminVaultPage() {
     // Local form states
     const [newTeamName, setNewTeamName] = useState('');
     const [guessInput, setGuessInput] = useState('');
-    const [wordleGuessInput, setWordleGuessInput] = useState('');
+    const [wordleLetterInput, setWordleLetterInput] = useState('');
+    const [wordlePositionInput, setWordlePositionInput] = useState('1');
 
     // New Question / Wordle builders
     const [qCat, setQCat] = useState('');
@@ -246,28 +247,32 @@ export default function AdminVaultPage() {
                                     </button>
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="mb-3 text-xs text-slate-400">
+                                    Enter the team's chosen letter and position. The projector never displays the answer length.
+                                </div>
+                                <div className="flex flex-wrap gap-2">
                                     <input
-                                        type="text"
-                                        maxLength={activeWordle.targetWord.length}
-                                        placeholder="Type team's guessed word..."
-                                        value={wordleGuessInput}
-                                        onChange={(e) => setWordleGuessInput(e.target.value.toUpperCase())}
-                                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono tracking-widest"
+                                        type="text" maxLength={1} placeholder="Letter (A–Z)"
+                                        value={wordleLetterInput}
+                                        onChange={(e) => setWordleLetterInput(e.target.value.replace(/[^a-z]/gi, '').slice(0, 1).toUpperCase())}
+                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono text-center"
+                                    />
+                                    <input
+                                        type="number" min={1} placeholder="Position"
+                                        value={wordlePositionInput}
+                                        onChange={(e) => setWordlePositionInput(e.target.value)}
+                                        className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2"
                                     />
                                     <button
                                         onClick={() => {
-                                            if (
-                                                wordleGuessInput.trim().length !==
-                                                activeWordle.targetWord.length
-                                            )
-                                                return;
-                                            store.submitWordleGuess(wordleGuessInput);
-                                            setWordleGuessInput('');
+                                            const position = Number(wordlePositionInput);
+                                            if (!wordleLetterInput || !Number.isInteger(position) || position < 1) return;
+                                            store.submitWordleGuess(wordleLetterInput, position);
+                                            setWordleLetterInput('');
                                         }}
                                         className="bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-lg font-bold"
                                     >
-                                        Submit Row
+                                        Submit Letter
                                     </button>
                                 </div>
                             </div>

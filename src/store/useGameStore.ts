@@ -9,7 +9,7 @@ import {
     Team,
     WordlePuzzle,
 } from '@/types/game';
-import { evaluateWordleGuess } from '@/utils/wordleLogic';
+import { evaluateWordlePosition } from '@/utils/wordleLogic';
 import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
 
 const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
@@ -81,22 +81,26 @@ const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
 ];
 
 const SAMPLE_WORDLES: WordlePuzzle[] = [
-    { id: 'w1', number: 1, targetWord: 'TOKEN', definition: 'A basic unit of text processed by a language model.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
-    { id: 'w2', number: 2, targetWord: 'LOGIC', definition: 'The reasoning process that helps a computer make decisions.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w1', number: 1, targetWord: 'TOKEN', definition: 'The smallest piece of text a language model processes.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w2', number: 2, targetWord: 'LOGIC', definition: 'Rules of reasoning used to reach a valid conclusion.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
     { id: 'w3', number: 3, targetWord: 'TREND', definition: 'A pattern showing how a metric changes over time.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
-    { id: 'w4', number: 4, targetWord: 'PIVOT', definition: 'An Excel feature that summarizes and rearranges large datasets dynamically.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
-    { id: 'w5', number: 5, targetWord: 'BAYES', definition: 'The theorem used to update probabilities when new evidence appears.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
-    { id: 'w6', number: 6, targetWord: 'EMBED', definition: 'The process of representing data as numerical vectors.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
-    { id: 'w7', number: 7, targetWord: 'QUERY', definition: 'A request for information sent to a database.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
-    { id: 'w8', number: 8, targetWord: 'CACHE', definition: 'A fast storage layer that keeps frequently used data close at hand.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
-    { id: 'w9', number: 9, targetWord: 'PIXEL', definition: 'The smallest addressable element in a digital image.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
-    { id: 'w10', number: 10, targetWord: 'SCHEMA', definition: 'The blueprint that describes how a database is structured.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
-    { id: 'w11', number: 11, targetWord: 'PYTHON', definition: 'A popular programming language widely used for automation and data science.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
-    { id: 'w12', number: 12, targetWord: 'REGRESSION', definition: 'A statistical method used to model relationships and predict a numeric outcome.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
-    { id: 'w13', number: 13, targetWord: 'ALGORITHM', definition: 'A finite sequence of steps designed to solve a problem.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
-    { id: 'w14', number: 14, targetWord: 'DASHBOARD', definition: 'A visual display that brings important business metrics together in one place.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
-    { id: 'w15', number: 15, targetWord: 'BLOCKCHAIN', definition: 'A distributed ledger that records transactions in linked, tamper-resistant blocks.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
-    { id: 'w16', number: 16, targetWord: 'VISUALIZATION', definition: 'The practice of turning data into charts, graphs, and other visual forms.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w4', number: 4, targetWord: 'PIVOT', definition: 'An Excel tool that summarises and rearranges large datasets.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w5', number: 5, targetWord: 'BAYES', definition: 'The surname attached to a theorem for updating probability with evidence.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w6', number: 6, targetWord: 'EMBED', definition: 'To convert text or other data into a numerical vector representation.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w7', number: 7, targetWord: 'QUERY', definition: 'A structured request sent to a database to retrieve information.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w8', number: 8, targetWord: 'CACHE', definition: 'A fast temporary store for frequently used data.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w9', number: 9, targetWord: 'PIXEL', definition: 'The smallest individually addressable unit in a digital image.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w10', number: 10, targetWord: 'SCHEMA', definition: 'The blueprint defining the structure of a database.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w11', number: 11, targetWord: 'PYTHON', definition: 'A programming language widely used in automation and data science.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w12', number: 12, targetWord: 'REGRESSION', definition: 'A statistical method for modelling relationships and predicting numeric outcomes.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w13', number: 13, targetWord: 'ALGORITHM', definition: 'A defined sequence of steps for solving a problem.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w14', number: 14, targetWord: 'DASHBOARD', definition: 'A visual summary of key business metrics and performance indicators.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w15', number: 15, targetWord: 'BLOCKCHAIN', definition: 'A shared digital ledger made of linked, tamper-evident records.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w16', number: 16, targetWord: 'VISUALIZATION', definition: 'Charts and graphics used to make patterns in data easier to understand.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w17', number: 17, targetWord: 'OVERFITTING', definition: 'When a model learns training data too closely and performs poorly on new data.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+    { id: 'w18', number: 18, targetWord: 'SEGMENTATION', definition: 'Dividing customers or data into groups with shared characteristics.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+    { id: 'w19', number: 19, targetWord: 'LATENCY', definition: 'The delay between a request and its response.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w20', number: 20, targetWord: 'FORECAST', definition: 'An estimate of what is likely to happen based on data.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
 ];
 
 interface GameActions {
@@ -117,7 +121,7 @@ interface GameActions {
     addWordle: (targetWord: string, definition: string) => void;
     deleteWordle: (id: string) => void;
     openWordle: (id: string) => void;
-    submitWordleGuess: (guessWord: string) => void;
+    submitWordleGuess: (letter: string, position: number) => void;
     closeWordleAsComplete: () => void;
 
     // Round 2 Actions
@@ -206,6 +210,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             if (raw) {
                 try {
                     const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed.wordles)) {
+                        parsed.wordles = parsed.wordles.map((w: WordlePuzzle) => {
+                            const legacy = Array.isArray(w.guesses) &&
+                                w.guesses.some((g: any) => typeof g.word === 'string' || Array.isArray(g.statuses));
+                            return legacy ? { ...w, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], isCompleted: false } : w;
+                        });
+                    }
                     const hasUntouchedStarterWordleBank =
                         Array.isArray(parsed.wordles) &&
                         parsed.wordles.length === 3 &&
@@ -354,54 +365,33 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 };
             }),
 
-        submitWordleGuess: (guessWord) =>
+        submitWordleGuess: (letter, position) =>
             commit((s) => {
                 const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
-                if (!puzzle || puzzle.guesses.length >= 6 || s.teams.length === 0) return {};
-                if (guessWord.trim().length !== puzzle.targetWord.length || !/^[a-z]+$/i.test(guessWord.trim())) return {};
+                if (!puzzle || puzzle.guesses.length >= 20 || s.teams.length === 0) return {};
+                const normalizedLetter = letter.toUpperCase().trim();
+                if (!/^[A-Z]$/.test(normalizedLetter) || !Number.isInteger(position) || position < 1) return {};
+                if (puzzle.guesses.some((g) => g.letter === normalizedLetter && g.position === position)) return {};
 
-                const activeTeamIdx =
-                    (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
+                const activeTeamIdx = (puzzle.startingTeamIndex + puzzle.guesses.length) % s.teams.length;
                 const activeTeam = s.teams[activeTeamIdx];
+                const result = evaluateWordlePosition(normalizedLetter, position, puzzle.targetWord,
+                    puzzle.discoveredGreenIndices, puzzle.discoveredLetters, s.config);
+                if (!result.valid) return {};
 
-                const evalRes = evaluateWordleGuess(
-                    guessWord,
-                    puzzle.targetWord,
-                    puzzle.discoveredGreenIndices,
-                    puzzle.discoveredLetters,
-                    s.config
-                );
-
-                const newGuess = {
-                    teamId: activeTeam.id,
-                    word: guessWord.toUpperCase().trim(),
-                    statuses: evalRes.statuses,
-                    pointsEarned: evalRes.pointsEarned,
-                };
-
-                const updatedGuesses = [...puzzle.guesses, newGuess];
-                const isDone = evalRes.isSolved || updatedGuesses.length >= 6;
+                const updatedGuesses = [...puzzle.guesses, {
+                    teamId: activeTeam.id, letter: normalizedLetter, position,
+                    status: result.status, pointsEarned: result.pointsEarned,
+                }];
+                const isDone = result.updatedGreenIndices.length === puzzle.targetWord.length || updatedGuesses.length >= 20;
 
                 return {
-                    teams: s.teams.map((t) =>
-                        t.id === activeTeam.id
-                            ? { ...t, score: t.score + evalRes.pointsEarned }
-                            : t
-                    ),
-                    wordles: s.wordles.map((w) =>
-                        w.id === puzzle.id
-                            ? {
-                                ...w,
-                                guesses: updatedGuesses,
-                                discoveredGreenIndices: evalRes.updatedGreenIndices,
-                                discoveredLetters: evalRes.updatedDiscoveredLetters,
-                                isCompleted: isDone,
-                            }
-                            : w
-                    ),
-                    wordleCountCompleted: isDone
-                        ? s.wordleCountCompleted + 1
-                        : s.wordleCountCompleted,
+                    teams: s.teams.map((t) => t.id === activeTeam.id ? { ...t, score: t.score + result.pointsEarned } : t),
+                    wordles: s.wordles.map((w) => w.id === puzzle.id ? {
+                        ...w, guesses: updatedGuesses, discoveredGreenIndices: result.updatedGreenIndices,
+                        discoveredLetters: result.updatedDiscoveredLetters, isCompleted: isDone,
+                    } : w),
+                    wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
                 };
             }),
 

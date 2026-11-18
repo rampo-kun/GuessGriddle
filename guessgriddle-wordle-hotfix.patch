@@ -1,0 +1,13 @@
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index 36ace11..61ea3d1 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -99,7 +99,7 @@ const SAMPLE_WORDLES: WordlePuzzle[] = [
+     { id: 'w16', number: 16, targetWord: 'VISUALIZATION', definition: 'Charts and graphics used to make patterns in data easier to understand.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+     { id: 'w17', number: 17, targetWord: 'OVERFITTING', definition: 'When a model learns training data too closely and performs poorly on new data.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+     { id: 'w18', number: 18, targetWord: 'SEGMENTATION', definition: 'Dividing customers or data into groups with shared characteristics.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 2 },
+-    { id: 'w19', number: 19, targetWord: 'LATENCY', definition: 'The delay between a request and the system's response.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w19', number: 19, targetWord: 'LATENCY', definition: 'The delay between a request and its response.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+     { id: 'w20', number: 20, targetWord: 'FORECAST', definition: 'An estimate of what is likely to happen based on data.', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 1 },
+ ];
+ 

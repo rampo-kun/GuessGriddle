@@ -5,118 +5,78 @@ import { useGameStore } from '@/store/useGameStore';
 export default function WordleBoard() {
     const { wordles, activeWordleId, teams, config } = useGameStore();
     const puzzle = wordles.find((w) => w.id === activeWordleId);
-
     if (!puzzle) return null;
 
-    const wordLen = puzzle.targetWord.length;
-    const cellSize = wordLen >= 12 ? 'w-8 h-8 md:w-10 md:h-10 text-xl md:text-2xl' : wordLen >= 9 ? 'w-10 h-10 md:w-12 md:h-12 text-2xl md:text-3xl' : 'w-12 h-12 md:w-16 md:h-16 text-3xl md:text-4xl';
-    const activeTeamIdx =
-        (puzzle.startingTeamIndex + puzzle.guesses.length) % Math.max(1, teams.length);
+    const activeTeamIdx = (puzzle.startingTeamIndex + puzzle.guesses.length) % Math.max(1, teams.length);
     const activeTeam = teams[activeTeamIdx];
+    const queueOrder = teams.map((_, offset) => teams[(puzzle.startingTeamIndex + offset) % teams.length]);
 
-    // Build circular order display
-    const queueOrder = teams.map((_, offset) => {
-        const idx = (puzzle.startingTeamIndex + offset) % teams.length;
-        return teams[idx];
-    });
+    const statusStyle = {
+        correct: 'bg-emerald-600 border-emerald-400 text-white',
+        present: 'bg-amber-500 border-amber-300 text-slate-950',
+        absent: 'bg-slate-800 border-slate-700 text-slate-300',
+    };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white p-8 flex flex-col items-center justify-between">
-            {/* Clue Header */}
+        <div className="min-h-screen bg-slate-950 text-white p-8 flex flex-col items-center gap-7">
             <div className="max-w-4xl w-full bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 text-center shadow-xl">
                 <div className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-2">
-                    Wordle #{puzzle.number} • Definition Clue
+                    Wordle #{puzzle.number} • Position Challenge
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    “{puzzle.definition}”
-                </h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">“{puzzle.definition}”</h2>
                 <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-slate-400">
                     <span>New Yellow: +{config.wordleNewYellowPoints} pts</span>
                     <span>•</span>
                     <span>New Green: +{config.wordleNewGreenPoints} pts</span>
-                    <span>•</span>
-                    <span>Full Word Solve: +{config.wordleExactWordBonus} pts</span>
                 </div>
+                <p className="mt-3 text-sm font-bold text-amber-300">Choose one letter and one position per turn. The answer length is hidden.</p>
             </div>
 
-            {/* Circular Queue Strip */}
-            <div className="flex items-center gap-3 my-4">
-                <span className="text-sm uppercase tracking-wider text-slate-400 font-bold">
-                    Turn Order:
-                </span>
-                {queueOrder.map((t, i) => {
-                    const isCurrent = !puzzle.isCompleted && t.id === activeTeam?.id;
-                    return (
-                        <div
-                            key={t.id}
-                            className={`px-4 py-1.5 rounded-full text-sm font-bold border ${isCurrent
-                                    ? 'bg-amber-500 text-slate-950 border-amber-300 scale-105'
-                                    : 'bg-slate-800 text-slate-300 border-slate-700'
-                                }`}
-                        >
-                            {i + 1}. {t.name}
-                        </div>
-                    );
-                })}
+            <div className="flex flex-wrap justify-center items-center gap-3">
+                <span className="text-sm uppercase tracking-wider text-slate-400 font-bold">Turn Order:</span>
+                {queueOrder.map((team, i) => (
+                    <div key={team.id} className={`px-4 py-1.5 rounded-full text-sm font-bold border ${
+                        !puzzle.isCompleted && team.id === activeTeam?.id
+                            ? 'bg-amber-500 text-slate-950 border-amber-300 scale-105'
+                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                    }`}>{i + 1}. {team.name}</div>
+                ))}
             </div>
 
-            {/* Six attempts; each puzzle gets exactly as many columns as its answer. */}
-            <div className="w-full max-w-[96vw] overflow-x-auto my-2">
-              <div className="mx-auto flex w-max min-w-fit flex-col gap-2 md:gap-3">
-                {Array.from({ length: 6 }).map((_, rowIdx) => {
-                    const guessObj = puzzle.guesses[rowIdx];
-                    const guessTeam = teams.find((t) => t.id === guessObj?.teamId);
-
-                    return (
-                        <div key={rowIdx} className="flex items-center gap-2 md:gap-4">
-                            <div className="w-20 md:w-36 shrink-0 text-right text-xs md:text-sm font-bold text-slate-400 truncate">
-                                {guessTeam ? guessTeam.name : `Row ${rowIdx + 1}`}
-                            </div>
-
-                            <div className="flex gap-1 md:gap-2">
-                                {Array.from({ length: wordLen }).map((__, colIdx) => {
-                                    const char = guessObj?.word[colIdx] || '';
-                                    const status = guessObj?.statuses[colIdx];
-
-                                    let bgClass = 'bg-slate-900 border-slate-700 text-white';
-                                    if (status === 'correct')
-                                        bgClass = 'bg-emerald-600 border-emerald-400 text-white';
-                                    else if (status === 'present')
-                                        bgClass = 'bg-amber-500 border-amber-300 text-slate-950';
-                                    else if (status === 'absent')
-                                        bgClass = 'bg-slate-800 border-slate-700 text-slate-400';
-
-                                    return (
-                                        <div
-                                            key={colIdx}
-                                            className={`${cellSize} shrink-0 rounded-lg md:rounded-xl border-2 flex items-center justify-center font-black uppercase transition-all ${bgClass}`}
-                                        >
-                                            {char}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="w-20 md:w-28 shrink-0 text-left">
-                                {guessObj && (
-                                    <span className="bg-indigo-600/30 border border-indigo-400/40 text-indigo-300 px-3 py-1 rounded-lg text-sm font-bold">
-                                        +{guessObj.pointsEarned} pts
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-              </div>
+            <div className="w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm font-bold uppercase tracking-widest text-slate-400">Attempts</span>
+                    <span className="text-sm text-slate-400">{puzzle.guesses.length} / 20</span>
+                </div>
+                {puzzle.guesses.length === 0 ? (
+                    <div className="py-10 text-center text-slate-500">No letters revealed yet. Let the guessing begin.</div>
+                ) : (
+                    <div className="space-y-3">
+                        {puzzle.guesses.map((guess, index) => {
+                            const team = teams.find((t) => t.id === guess.teamId);
+                            return (
+                                <div key={`${guess.teamId}-${index}`} className="flex items-center gap-3 rounded-xl bg-slate-950 p-3">
+                                    <span className="w-32 truncate text-sm font-bold text-slate-400">{team?.name ?? 'Team'}</span>
+                                    <span className={`h-12 w-12 rounded-lg border-2 flex items-center justify-center text-2xl font-black ${statusStyle[guess.status]}`}>{guess.letter}</span>
+                                    <span className="text-sm text-slate-300">Position {guess.position}</span>
+                                    <span className="ml-auto text-sm font-bold text-indigo-300">+{guess.pointsEarned} pts</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
-            {/* Reveal Banner when completed */}
+            <div className="flex flex-wrap justify-center gap-5 text-sm font-bold">
+                <span className="text-emerald-400">■ Green: correct position</span>
+                <span className="text-amber-400">■ Yellow: letter exists elsewhere</span>
+                <span className="text-slate-400">■ Grey: letter not in answer</span>
+            </div>
+
             {puzzle.isCompleted && (
                 <div className="bg-emerald-950 border-2 border-emerald-500 px-8 py-4 rounded-2xl text-center">
                     <span className="text-slate-300 text-lg mr-3">Target Word:</span>
-                    <span className="text-3xl font-black text-emerald-400 tracking-widest">
-                        {puzzle.targetWord}
-                    </span>
+                    <span className="text-3xl font-black text-emerald-400 tracking-widest">{puzzle.targetWord}</span>
                 </div>
             )}
         </div>

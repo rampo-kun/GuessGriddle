@@ -1,74 +1,40 @@
-export function evaluateWordleGuess(
-    guessRaw: string,
+export function evaluateWordlePosition(
+    letterRaw: string,
+    position: number,
     targetRaw: string,
     prevGreenIndices: number[],
     prevDiscoveredLetters: string[],
-    config: {
-        wordleExactWordBonus: number;
-        wordleNewGreenPoints: number;
-        wordleNewYellowPoints: number;
-    }
+    config: { wordleNewGreenPoints: number; wordleNewYellowPoints: number }
 ) {
-    const guess = guessRaw.toUpperCase().trim();
+    const letter = letterRaw.toUpperCase().trim();
     const target = targetRaw.toUpperCase().trim();
-    const len = target.length;
-
-    const statuses: ('correct' | 'present' | 'absent')[] = Array(len).fill('absent');
-    const targetCharCounts: Record<string, number> = {};
-
-    for (const ch of target) {
-        targetCharCounts[ch] = (targetCharCounts[ch] || 0) + 1;
+    const index = position - 1;
+    if (!/^[A-Z]$/.test(letter) || index < 0 || index >= target.length) {
+        return { valid: false as const, status: 'absent' as const, pointsEarned: 0,
+            updatedGreenIndices: prevGreenIndices, updatedDiscoveredLetters: prevDiscoveredLetters };
     }
 
-    // Pass 1: Greens
-    for (let i = 0; i < len; i++) {
-        if (guess[i] === target[i]) {
-            statuses[i] = 'correct';
-            targetCharCounts[guess[i]]--;
-        }
-    }
-
-    // Pass 2: Yellows
-    for (let i = 0; i < len; i++) {
-        if (statuses[i] !== 'correct' && targetCharCounts[guess[i]] > 0) {
-            statuses[i] = 'present';
-            targetCharCounts[guess[i]]--;
-        }
-    }
-
-    // Novel Points Calculation
+    const status = target[index] === letter
+        ? 'correct' as const
+        : target.includes(letter) ? 'present' as const : 'absent' as const;
+    const greens = new Set(prevGreenIndices);
+    const discovered = new Set(prevDiscoveredLetters);
     let pointsEarned = 0;
-    const updatedGreenIndices = new Set(prevGreenIndices);
-    const updatedDiscoveredLetters = new Set(prevDiscoveredLetters);
 
-    for (let i = 0; i < len; i++) {
-        const letter = guess[i];
-        if (statuses[i] === 'correct') {
-            // Award green points if this exact position wasn't green before
-            if (!updatedGreenIndices.has(i)) {
-                pointsEarned += config.wordleNewGreenPoints;
-                updatedGreenIndices.add(i);
-            }
-            updatedDiscoveredLetters.add(letter);
-        } else if (statuses[i] === 'present') {
-            // Award yellow points ONLY if this alphabet was never discovered before
-            if (!updatedDiscoveredLetters.has(letter)) {
-                pointsEarned += config.wordleNewYellowPoints;
-                updatedDiscoveredLetters.add(letter);
-            }
-        }
-    }
-
-    const isSolved = guess === target;
-    if (isSolved) {
-        pointsEarned += config.wordleExactWordBonus;
+    if (status === 'correct') {
+        if (!greens.has(index)) pointsEarned += config.wordleNewGreenPoints;
+        greens.add(index);
+        discovered.add(letter);
+    } else if (status === 'present' && !discovered.has(letter)) {
+        pointsEarned += config.wordleNewYellowPoints;
+        discovered.add(letter);
     }
 
     return {
-        statuses,
+        valid: true as const,
+        status,
         pointsEarned,
-        isSolved,
-        updatedGreenIndices: Array.from(updatedGreenIndices),
-        updatedDiscoveredLetters: Array.from(updatedDiscoveredLetters),
+        updatedGreenIndices: Array.from(greens),
+        updatedDiscoveredLetters: Array.from(discovered),
     };
 }

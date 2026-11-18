@@ -59,7 +59,7 @@ export default function JeopardyView() {
 
                     return (
                         <div key={cat} className="flex min-w-0 flex-col gap-4">
-                            <div className="h-24 min-h-24 flex items-center justify-center overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-2 rounded-2xl text-center font-black text-base md:text-lg leading-tight tracking-wide uppercase shadow-lg border border-indigo-400/30 break-words [overflow-wrap:anywhere]">
+                            <div className="h-24 min-h-24 shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-2 rounded-2xl text-center font-black text-sm md:text-base leading-tight tracking-wide uppercase shadow-lg border border-indigo-400/30 break-words [overflow-wrap:anywhere] line-clamp-3">
                                 {cat}
                             </div>
 
