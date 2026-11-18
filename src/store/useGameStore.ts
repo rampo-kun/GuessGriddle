@@ -10,8 +10,9 @@ import {
     WordlePuzzle,
 } from '@/types/game';
 import { evaluateWordleGuess } from '@/utils/wordleLogic';
+import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
 
-const STORAGE_KEY = 'guessgriddle_xinsights_state_v2';
+const STORAGE_KEY = 'guessgriddle_xinsights_state_v3';
 const CHANNEL_NAME = 'guessgriddle_sync_channel';
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -157,7 +158,7 @@ const INITIAL_STATE: GameState = {
         { id: 't3', name: 'Bayesian Beasts', score: 0, startingWord: '', words: [] },
     ],
     jeopardyTurnIndex: 0,
-    jeopardyBoard: SAMPLE_JEOPARDY,
+    jeopardyBoard: [...SAMPLE_JEOPARDY, ...IMAGE_VALUATION_QUESTIONS],
     activeJeopardyId: null,
     lastGuesstimateResult: null,
     wordles: SAMPLE_WORDLES,
