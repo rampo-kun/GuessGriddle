@@ -1,7 +1,7 @@
 'use client';
 
 import { useGameStore } from '@/store/useGameStore';
-import { Trophy, Sparkles, CheckCircle2, XCircle } from 'lucide-react';
+import { Trophy, Sparkles, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import RoundTimer from '@/components/projector/RoundTimer';
 
 export default function JeopardyView() {
@@ -11,6 +11,7 @@ export default function JeopardyView() {
         jeopardyBoard,
         activeJeopardyId,
         lastGuesstimateResult,
+        setView,
     } = useGameStore();
 
     const currentTeam = teams[jeopardyTurnIndex];
@@ -44,6 +45,9 @@ export default function JeopardyView() {
                         </div>
                     ))}
                 </div>
+                <button onClick={() => setView('WORDLE_SELECT')} className="shrink-0 inline-flex items-center gap-2 rounded-xl border-2 border-[#f2c14e] bg-[#f2c14e] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#24211d] shadow-md hover:bg-[#ffe08a]">
+                    Go to Wordle <ArrowRight size={17} />
+                </button>
             </div>
 
             {/* Jeopardy Grid */}

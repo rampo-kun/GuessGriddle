@@ -1,10 +1,10 @@
 'use client';
 
 import { useGameStore } from '@/store/useGameStore';
-import { Trophy } from 'lucide-react';
+import { Trophy, ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function LeaderboardView() {
-    const { teams } = useGameStore();
+    const { teams, setView } = useGameStore();
     const sorted = [...teams].sort((a, b) => b.score - a.score);
 
     return (
@@ -23,6 +23,14 @@ export default function LeaderboardView() {
                         <span className="shrink-0 text-2xl md:text-4xl font-black text-[#a82e22]">{team.score} pts</span>
                     </div>
                 ))}
+            </div>
+            <div className="mt-8 flex w-full max-w-4xl items-center justify-between gap-3">
+                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] hover:bg-[#303b50] hover:text-white">
+                    <ArrowLeft size={16} /> Guessing Grid
+                </button>
+                <button onClick={() => setView('WORDLE_SELECT')} className="inline-flex items-center gap-2 rounded-xl bg-[#c83d2d] px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-[#a82e22]">
+                    Wordle <ArrowRight size={16} />
+                </button>
             </div>
         </main>
     );

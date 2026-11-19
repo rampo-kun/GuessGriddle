@@ -45,7 +45,7 @@ export type WordleDifficulty = 'easy' | 'medium' | 'hard';
 export interface WordlePuzzle {
     id: string;
     number: number;
-    targetWord: string; // Secret answer; never render its length on the projector
+    targetWord: string; // Secret answer; its letter count may be shown on the projector
     definition: string;
     difficulty: WordleDifficulty;
     assignedTeamId?: string;

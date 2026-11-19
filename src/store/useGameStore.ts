@@ -499,28 +499,51 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 const activeTeam = s.teams.find((team) => team.id === puzzle.assignedTeamId);
                 if (!activeTeam) return {};
 
-                const difficultyMultiplier = puzzle.difficulty === 'hard' ? 1.5 : puzzle.difficulty === 'medium' ? 1 : 0.75;
                 const result = evaluateWordleGuess(
                     normalizedWord,
                     puzzle.targetWord,
                     puzzle.discoveredGreenIndices ?? [],
                     puzzle.discoveredLetters ?? [],
                     {
-                        wordleNewGreenPoints: Math.round(s.config.wordleNewGreenPoints * difficultyMultiplier),
-                        wordleNewYellowPoints: Math.round(s.config.wordleNewYellowPoints * difficultyMultiplier),
+                        wordleNewGreenPoints: Math.max(1, s.config.wordleNewGreenPoints),
+                        wordleNewYellowPoints: Math.max(1, s.config.wordleNewYellowPoints),
                     }
                 );
                 if (!result.valid || normalizedWord.length !== puzzle.targetWord.length) return {};
 
-                const pointsCap = puzzle.difficulty === 'hard' ? 300 : puzzle.difficulty === 'medium' ? 220 : 150;
+                // Each puzzle has one fixed maximum. Partial discoveries earn a
+                // proportional share; solving the word awards every remaining point.
+                const pointsCap = puzzle.difficulty === 'hard' ? 300 : puzzle.difficulty === 'easy' ? 150 : 220;
                 const pointsAlreadyEarned = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
-                const pointsEarned = Math.min(result.pointsEarned, Math.max(0, pointsCap - pointsAlreadyEarned));
-                const pointsByLetter = result.pointsByLetter.map((points) => points);
-                let remainingCap = Math.max(0, pointsCap - pointsAlreadyEarned);
-                for (let i = 0; i < pointsByLetter.length; i += 1) {
-                    const awarded = Math.min(pointsByLetter[i], remainingCap);
-                    pointsByLetter[i] = awarded;
-                    remainingCap -= awarded;
+                const remainingPoints = Math.max(0, pointsCap - pointsAlreadyEarned);
+                const greenWeight = Math.max(1, s.config.wordleNewGreenPoints);
+                const yellowWeight = Math.max(1, s.config.wordleNewYellowPoints);
+                const maximumWeight = normalizedWord.length * greenWeight;
+                const letterWeights = result.statuses.map((status, index) => {
+                    // The evaluator already handles duplicate letters and marks
+                    // only genuinely new discoveries with a positive value.
+                    if (result.pointsByLetter[index] <= 0) return 0;
+                    return status === 'correct' ? greenWeight : status === 'present' ? yellowWeight : 0;
+                });
+                const scoringWeights = result.solved
+                    ? result.statuses.map((status) => status === 'correct' ? greenWeight : 0)
+                    : letterWeights;
+                const discoveredWeight = scoringWeights.reduce((sum, weight) => sum + weight, 0);
+                const pointsEarned = result.solved
+                    ? remainingPoints
+                    : Math.min(remainingPoints, Math.round((discoveredWeight / maximumWeight) * pointsCap));
+
+                // Allocate the exact awarded total across the visible tiles. The
+                // final tile absorbs rounding so tile values always sum to the guess.
+                const pointsByLetter = scoringWeights.map((weight) =>
+                    discoveredWeight > 0 ? Math.floor((weight / discoveredWeight) * pointsEarned) : 0
+                );
+                let unallocated = pointsEarned - pointsByLetter.reduce((sum, points) => sum + points, 0);
+                for (let i = pointsByLetter.length - 1; i >= 0 && unallocated > 0; i -= 1) {
+                    if (scoringWeights[i] > 0) {
+                        pointsByLetter[i] += 1;
+                        unallocated -= 1;
+                    }
                 }
                 const updatedGuesses = [...puzzle.guesses, {
                     teamId: activeTeam.id,

@@ -1,10 +1,10 @@
 'use client';
 
 import { useGameStore } from '@/store/useGameStore';
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock, ArrowLeft } from 'lucide-react';
 
 export default function WordleSelector() {
-    const { wordles } = useGameStore();
+    const { wordles, setView } = useGameStore();
     const tiers = [
         { key: 'easy', label: 'Easy', points: 'Up to 150 pts', color: 'border-emerald-500 text-emerald-900' },
         { key: 'medium', label: 'Medium', points: 'Up to 220 pts', color: 'border-amber-500 text-amber-900' },
@@ -40,7 +40,12 @@ export default function WordleSelector() {
                     );
                 })}
             </div>
-            <p className="mt-8 text-xs font-black uppercase tracking-[.2em] text-[#766e61]">X-Insights · GuessGriddle</p>
+            <div className="mt-8 flex w-full max-w-6xl items-center justify-between gap-3">
+                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
+                    <ArrowLeft size={16} /> Go to Guessing Grid
+                </button>
+                <p className="text-xs font-black uppercase tracking-[.2em] text-[#766e61]">X-Insights · GuessGriddle</p>
+            </div>
         </main>
     );
 }

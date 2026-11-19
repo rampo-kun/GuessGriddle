@@ -275,10 +275,10 @@ export default function AdminVaultPage() {
                                     <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
                                 </div>
                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
-                                <div className="text-xs text-slate-400">New green position: base {store.config.wordleNewGreenPoints} pts · New yellow letter: base {store.config.wordleNewYellowPoints} pts · Easy 0.75× (150 cap), Medium 1× (220 cap), Hard 1.5× (300 cap). Each new discovery scores once per puzzle.</div>
+                                <div className="text-xs text-slate-400">Scoring weights: green {store.config.wordleNewGreenPoints} · yellow {store.config.wordleNewYellowPoints}. Points scale to the puzzle cap; solving awards the remaining points. Easy 150 · Medium 220 · Hard 300 max.</div>
                                 {!activeWordle.isCompleted && (
                                     <div className="flex flex-wrap gap-2">
-                                        <input type="text" placeholder="Selected team's full-word guess" value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
+                                        <input type="text" placeholder={`Enter ${activeWordle.targetWord.length}-letter word`} maxLength={activeWordle.targetWord.length} value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
                                         <button disabled={!wordleGuessInput.trim()} onClick={() => { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); }} className="bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white px-5 py-2 rounded-lg font-bold">Submit Guess</button>
                                     </div>
                                 )}

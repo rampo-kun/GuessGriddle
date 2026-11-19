@@ -1,0 +1,27 @@
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -65,18 +65,21 @@
+                         const guess = puzzle.guesses[rowIndex];
+                         const team = guess ? teams.find((t) => t.id === guess.teamId) : undefined;
+                         return (
+-                            <div key={rowIndex} className="flex min-h-0 flex-1 items-center gap-2 md:gap-4">
++                            <div key={rowIndex} className="flex min-h-0 flex-1 items-center justify-center gap-2 md:gap-4">
+                                 <div className="w-9 md:w-14 shrink-0 text-right">
+                                     <span className="text-[10px] md:text-xs font-black text-[#766e61]">{rowIndex + 1}</span>
+                                 </div>
+-                                <div className="grid flex-1 gap-1.5 md:gap-2 h-full max-h-[76px]" style={{ gridTemplateColumns: `repeat(${letterCount}, minmax(0, 1fr))` }}>
++                                <div
++                                    className="grid h-full shrink-0 items-center gap-1.5 md:gap-2"
++                                    style={{ gridTemplateColumns: `repeat(${letterCount}, clamp(28px, 4.4vh, 40px))` }}
++                                >
+                                     {Array.from({ length: letterCount }, (_, letterIndex) => {
+                                         const letter = guess?.word[letterIndex] ?? '';
+                                         const status = guess?.statuses[letterIndex];
+                                         return (
+                                             <div
+                                                 key={letterIndex}
+-                                                className={`flex min-w-0 aspect-square max-h-full items-center justify-center rounded-md md:rounded-lg border-2 text-sm sm:text-lg md:text-2xl font-black ${status ? statusStyle[status] : 'border-[#cfc5b4] bg-[#fffdf8] text-[#24211d]'}`}
++                                                className={`flex h-[clamp(28px,4.4vh,40px)] w-full min-w-0 items-center justify-center rounded-md md:rounded-lg border-2 text-sm sm:text-lg md:text-2xl font-black ${status ? statusStyle[status] : 'border-[#cfc5b4] bg-[#fffdf8] text-[#24211d]'}`}
+                                                 title={status === 'correct' ? 'Correct position' : status === 'present' ? 'Correct letter, wrong position' : status === 'absent' ? 'Not in answer' : 'Empty letter slot'}
+                                             >
+                                                 {letter}
