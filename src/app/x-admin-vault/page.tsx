@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useGameStore } from '@/store/useGameStore';
+import { useGameStore, isRound1ModeLocked } from '@/store/useGameStore';
 import { ActiveView } from '@/types/game';
 
 export default function AdminVaultPage() {
@@ -52,6 +52,8 @@ export default function AdminVaultPage() {
         ? store.teams.find((team) => team.id === activeWordle.assignedTeamId)
         : undefined;
     const selectedWordleTeamId = currentJeopardyTeam?.id ?? '';
+    const jeopardyLocked = isRound1ModeLocked(store.round1ModeByTeam, currentJeopardyTeam?.id, 'JEOPARDY');
+    const wordleLocked = isRound1ModeLocked(store.round1ModeByTeam, currentJeopardyTeam?.id, 'WORDLE_SELECT');
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
@@ -171,11 +173,17 @@ export default function AdminVaultPage() {
                             </select>
                         </div>
 
+                        {jeopardyLocked && (
+                            <p className="mb-3 rounded-lg bg-amber-950/50 p-3 text-sm font-bold text-amber-300">
+                                {currentJeopardyTeam?.name} has played Jeopardy twice in a row and must play Wordle this turn.
+                            </p>
+                        )}
                         {/* Tile Launcher */}
                         <div className="grid grid-cols-2 gap-2 mb-6">
                             {store.jeopardyBoard.map((q) => (
                                 <button
                                     key={q.id}
+                                    disabled={jeopardyLocked}
                                     onClick={() => {
                                         store.setView('JEOPARDY');
                                         store.selectJeopardyTile(q.id);
@@ -255,6 +263,11 @@ export default function AdminVaultPage() {
                             <p className="text-xs text-slate-400 mt-1">Choose any team and difficulty. A team may play multiple different Wordle puzzles; each puzzle can only be assigned once.</p>
                         </div>
 
+                        {wordleLocked && (
+                            <p className="rounded-lg bg-amber-950/50 p-3 text-sm font-bold text-amber-300">
+                                {currentJeopardyTeam?.name} has played Wordle twice in a row and must play Jeopardy this turn.
+                            </p>
+                        )}
                         <div className="rounded-lg bg-slate-950 p-3 text-sm">Wordle team: <strong className="text-emerald-300">{currentJeopardyTeam?.name ?? 'No active team'}</strong></div>
 
                         {(['easy', 'medium', 'hard'] as const).map((difficulty) => (
@@ -264,7 +277,7 @@ export default function AdminVaultPage() {
                                     {store.wordles.filter((p) => (p.difficulty ?? 'medium') === difficulty).map((puzzle) => {
                                         const puzzleAssignedToAnotherTeam = Boolean(puzzle.assignedTeamId && puzzle.assignedTeamId !== selectedWordleTeamId);
                                         return (
-                                        <button key={puzzle.id} disabled={puzzle.isCompleted || !selectedWordleTeamId || puzzleAssignedToAnotherTeam} onClick={() => store.openWordle(puzzle.id, selectedWordleTeamId)} className={`px-3 py-2 rounded-lg border text-sm font-bold ${puzzle.isCompleted ? 'bg-slate-950 border-slate-700 text-slate-500' : 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100 hover:bg-emerald-900'}`}>
+                                        <button key={puzzle.id} disabled={puzzle.isCompleted || !selectedWordleTeamId || puzzleAssignedToAnotherTeam || wordleLocked} onClick={() => store.openWordle(puzzle.id, selectedWordleTeamId)} className={`px-3 py-2 rounded-lg border text-sm font-bold ${puzzle.isCompleted ? 'bg-slate-950 border-slate-700 text-slate-500' : 'bg-emerald-950/60 border-emerald-500/60 text-emerald-100 hover:bg-emerald-900'}`}>
                                             #{puzzle.number} · {puzzle.targetWord} {puzzle.isCompleted ? '✓' : puzzleAssignedToAnotherTeam ? '· Assigned' : ''}
                                         </button>
                                     )})}
@@ -280,7 +293,11 @@ export default function AdminVaultPage() {
                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
                                         <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
                                     </div>
-                                    <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
+                                    {activeWordle.isCompleted ? (
+                                        <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2 rounded font-black">Reveal Result Shown · Next Team</button>
+                                    ) : (
+                                        <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
+                                    )}
                                 </div>
                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
                                 <div className="text-xs text-slate-400">Scoring: a first-guess solve earns full points; each later attempt earns a smaller share (linear decrease). Failed guesses earn 0 points.</div>

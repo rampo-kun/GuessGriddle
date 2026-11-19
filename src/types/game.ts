@@ -9,6 +9,13 @@ export type ActiveView =
     | 'WIKIRACE_FINALE'
     | 'WIKIRACE_WINNER';
 
+export type Round1Mode = 'JEOPARDY' | 'WORDLE_SELECT';
+
+export interface Round1ModeRecord {
+    mode: Round1Mode;
+    streak: number; // consecutive completed turns this team has played this mode
+}
+
 export interface Team {
     id: string;
     name: string;
@@ -77,7 +84,8 @@ export interface GameState {
     teams: Team[];
     jeopardyTurnIndex: number;
     lastRound1Mode: 'JEOPARDY' | 'WORDLE_SELECT' | null;
-    round1ModeStreak: number;
+    round1ModeStreak: number; // legacy global streak, no longer used
+    round1ModeByTeam: Record<string, Round1ModeRecord>; // per-team streak, keyed by team id
     jeopardyBoard: JeopardyQuestion[];
     activeJeopardyId: string | null;
     lastGuesstimateResult: {

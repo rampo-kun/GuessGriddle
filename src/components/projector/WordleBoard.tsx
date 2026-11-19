@@ -3,7 +3,6 @@
 import { useGameStore } from '@/store/useGameStore';
 import RoundTimer from '@/components/projector/RoundTimer';
 import ProjectorStage from '@/components/projector/ProjectorStage';
-import { ArrowLeft } from 'lucide-react';
 
 /**
  * Wordle projector screen, laid out on the fixed 1920x1080 stage (see
@@ -19,7 +18,7 @@ const ROW_GAP = 12;
 const MAX_TILE = 120;
 
 export default function WordleBoard() {
-    const { wordles, activeWordleId, teams, config, setView } = useGameStore();
+    const { wordles, activeWordleId, teams, config } = useGameStore();
     const puzzle = wordles.find((w) => w.id === activeWordleId);
     if (!puzzle) return null;
 
@@ -143,10 +142,7 @@ export default function WordleBoard() {
                 </aside>
             </div>
 
-            <footer className="shrink-0 flex items-center justify-between gap-3 px-1">
-                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-5 py-2 text-sm font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
-                    <ArrowLeft size={18} /> Go to Guessing Grid
-                </button>
+            <footer className="shrink-0 flex items-center justify-end gap-3 px-1">
                 <div className="text-sm font-black uppercase tracking-wider text-[#514a40]">X-INSIGHTS · WORDLE</div>
             </footer>
         </ProjectorStage>

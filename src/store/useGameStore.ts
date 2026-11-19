@@ -6,6 +6,8 @@ import {
     GameConfig,
     GameState,
     JeopardyQuestion,
+    Round1Mode,
+    Round1ModeRecord,
     Team,
     WordlePuzzle,
 } from '@/types/game';
@@ -182,6 +184,7 @@ const INITIAL_STATE: GameState = {
     jeopardyTurnIndex: 0,
     lastRound1Mode: null,
     round1ModeStreak: 0,
+    round1ModeByTeam: {},
     jeopardyBoard: [...SAMPLE_JEOPARDY],
     activeJeopardyId: null,
     lastGuesstimateResult: null,
@@ -197,6 +200,34 @@ const INITIAL_STATE: GameState = {
     roundTimerStartedAt: null,
     roundTimerPhase: 'idle',
 };
+
+// Per-team streak: a team may play the same Round 1 mode twice in a row, but
+// not a third time. Playing a different mode resets that team's streak to 1.
+// Other teams' choices never affect this team's streak.
+function recordRound1Play(
+    history: Record<string, Round1ModeRecord> | undefined,
+    teamId: string,
+    mode: Round1Mode
+): Record<string, Round1ModeRecord> {
+    const prev = history?.[teamId];
+    return {
+        ...(history ?? {}),
+        [teamId]: { mode, streak: prev?.mode === mode ? prev.streak + 1 : 1 },
+    };
+}
+
+// True when this team has already played this mode twice in a row. Every
+// entry point (projector choice, admin tile launcher, admin Wordle launcher)
+// must check this, otherwise the lock can be bypassed.
+export function isRound1ModeLocked(
+    history: Record<string, Round1ModeRecord> | undefined,
+    teamId: string | undefined,
+    mode: Round1Mode
+): boolean {
+    if (!teamId) return false;
+    const record = history?.[teamId];
+    return record?.mode === mode && record.streak >= 2;
+}
 
 function broadcastState(state: GameState) {
     if (typeof window === 'undefined') return;
@@ -221,6 +252,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 jeopardyTurnIndex: next.jeopardyTurnIndex,
                 lastRound1Mode: next.lastRound1Mode,
                 round1ModeStreak: next.round1ModeStreak,
+                round1ModeByTeam: next.round1ModeByTeam,
                 jeopardyBoard: next.jeopardyBoard,
                 activeJeopardyId: next.activeJeopardyId,
                 lastGuesstimateResult: next.lastGuesstimateResult,
@@ -296,6 +328,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     }
                     parsed.lastRound1Mode = parsed.lastRound1Mode ?? null;
                     parsed.round1ModeStreak = parsed.round1ModeStreak ?? 0;
+                    parsed.round1ModeByTeam = parsed.round1ModeByTeam ?? {};
                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
                     // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
@@ -370,19 +403,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
         setJeopardyTurn: (index) => commit(() => ({ jeopardyTurnIndex: index })),
         startRound1Choice: () => commit(() => ({ activeView: 'R1_CHOICE' })),
         chooseRound1Mode: (mode) => commit((s) => {
-            if (s.teams.length === 0) return {};
-            const forcedMode = s.round1ModeStreak >= 2 && s.lastRound1Mode === mode;
-            if (forcedMode) return {};
-            // Switching modes always starts a fresh streak at one. Only consecutive
-            // selections of the same mode increase the streak.
-            const nextStreak = s.lastRound1Mode === mode
-                ? s.round1ModeStreak + 1
-                : 1;
-            return {
-                activeView: mode,
-                lastRound1Mode: mode,
-                round1ModeStreak: nextStreak,
-            };
+            const team = s.teams[s.jeopardyTurnIndex];
+            if (!team) return {};
+            // Block only this team's third consecutive turn in the same mode.
+            if (isRound1ModeLocked(s.round1ModeByTeam, team.id, mode)) return {};
+            // The streak is recorded when the turn is actually played, so
+            // going back and re-choosing does not count twice.
+            return { activeView: mode };
         }),
         startRoundTimer: () => commit((s) => ({
             roundTimerStartedAt: Date.now(),
@@ -411,12 +438,16 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             })),
 
         selectJeopardyTile: (id) =>
-            commit((s) => ({
-                activeJeopardyId: id,
-                lastGuesstimateResult: null,
-                roundTimerStartedAt: id ? Date.now() : null,
-                roundTimerPhase: id ? 'thinking' : 'idle',
-            })),
+            commit((s) => {
+                // A team cannot start a third Jeopardy turn in a row.
+                if (id && isRound1ModeLocked(s.round1ModeByTeam, s.teams[s.jeopardyTurnIndex]?.id, 'JEOPARDY')) return {};
+                return {
+                    activeJeopardyId: id,
+                    lastGuesstimateResult: null,
+                    roundTimerStartedAt: id ? Date.now() : null,
+                    roundTimerPhase: id ? 'thinking' : 'idle',
+                };
+            }),
 
         submitGuesstimate: (guess) =>
             commit((s) => {
@@ -456,6 +487,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 return {
                     teams: updatedTeams,
                     jeopardyBoard: updatedBoard,
+                    round1ModeByTeam: recordRound1Play(s.round1ModeByTeam, currentTeam.id, 'JEOPARDY'),
                     // Keep the question and result on the projector until the host
                     // explicitly advances to the next team's choice screen.
                     activeView: 'JEOPARDY',
@@ -515,6 +547,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 if (!puzzle || puzzle.isCompleted ||
                     (puzzle.assignedTeamId && puzzle.assignedTeamId !== teamId) ||
                     !s.teams.some((team) => team.id === teamId)) return {};
+                // A team cannot start a third Wordle turn in a row.
+                if (isRound1ModeLocked(s.round1ModeByTeam, teamId, 'WORDLE_SELECT')) return {};
                 return {
                     activeWordleId: id,
                     activeView: 'WORDLE_PLAY',
@@ -587,25 +621,37 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         isCompleted: isDone,
                     } : w),
                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
-                    activeView: isDone ? 'R1_CHOICE' : s.activeView,
-                    jeopardyTurnIndex: isDone && s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : s.jeopardyTurnIndex,
+                    // Stay on the Wordle board after the puzzle ends so the answer
+                    // remains on the projector. The host advances with
+                    // closeWordleAsComplete ("Reveal Result Shown · Next Team").
+                    round1ModeByTeam: isDone
+                        ? recordRound1Play(s.round1ModeByTeam, activeTeam.id, 'WORDLE_SELECT')
+                        : s.round1ModeByTeam,
                     roundTimerStartedAt: isDone ? null : Date.now(),
                     roundTimerPhase: isDone ? 'idle' : 'thinking',
                 };
             }),
 
         closeWordleAsComplete: () =>
-            commit((s) => ({
-                wordles: s.wordles.map((w) =>
-                    w.id === s.activeWordleId ? { ...w, isCompleted: true } : w
-                ),
-                wordleCountCompleted: s.wordleCountCompleted + (s.wordles.find((w) => w.id === s.activeWordleId)?.isCompleted ? 0 : 1),
-                activeWordleId: null,
-                activeView: 'R1_CHOICE',
-                jeopardyTurnIndex: s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : 0,
-                roundTimerStartedAt: null,
-                roundTimerPhase: 'idle',
-            })),
+            commit((s) => {
+                const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
+                // Count the turn only if it wasn't already counted when solved.
+                const countTurn = Boolean(puzzle && !puzzle.isCompleted && puzzle.assignedTeamId);
+                return {
+                    wordles: s.wordles.map((w) =>
+                        w.id === s.activeWordleId ? { ...w, isCompleted: true } : w
+                    ),
+                    wordleCountCompleted: s.wordleCountCompleted + (puzzle && !puzzle.isCompleted ? 1 : 0),
+                    round1ModeByTeam: countTurn
+                        ? recordRound1Play(s.round1ModeByTeam, puzzle!.assignedTeamId!, 'WORDLE_SELECT')
+                        : s.round1ModeByTeam,
+                    activeWordleId: null,
+                    activeView: 'R1_CHOICE',
+                    jeopardyTurnIndex: s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : 0,
+                    roundTimerStartedAt: null,
+                    roundTimerPhase: 'idle',
+                };
+            }),
 
         // ROUND 2: WORD AUCTION & STEAL
         initializeRound2: () =>

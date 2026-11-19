@@ -1,0 +1,243 @@
+diff --git a/src/app/x-admin-vault/page.tsx b/src/app/x-admin-vault/page.tsx
+index 397dd07..1871f37 100644
+--- a/src/app/x-admin-vault/page.tsx
++++ b/src/app/x-admin-vault/page.tsx
+@@ -280,7 +280,11 @@ export default function AdminVaultPage() {
+                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
+                                         <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
+                                     </div>
+-                                    <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
++                                    {activeWordle.isCompleted ? (
++                                        <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2 rounded font-black">Reveal Result Shown · Next Team</button>
++                                    ) : (
++                                        <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
++                                    )}
+                                 </div>
+                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
+                                 <div className="text-xs text-slate-400">Scoring: a first-guess solve earns full points; each later attempt earns a smaller share (linear decrease). Failed guesses earn 0 points.</div>
+diff --git a/src/components/projector/Round1Choice.tsx b/src/components/projector/Round1Choice.tsx
+index 3afc7e7..a75e578 100644
+--- a/src/components/projector/Round1Choice.tsx
++++ b/src/components/projector/Round1Choice.tsx
+@@ -1,10 +1,11 @@
+ 'use client';
+ import { useGameStore } from '@/store/useGameStore';
+ export default function Round1Choice() {
+- const {teams,jeopardyTurnIndex,lastRound1Mode,round1ModeStreak,chooseRound1Mode}=useGameStore();
++ const {teams,jeopardyTurnIndex,round1ModeByTeam,chooseRound1Mode}=useGameStore();
+  const team=teams[jeopardyTurnIndex];
+- const jBlocked=lastRound1Mode==='JEOPARDY'&&round1ModeStreak>=2;
+- const wBlocked=lastRound1Mode==='WORDLE_SELECT'&&round1ModeStreak>=2;
++ const record=team?round1ModeByTeam?.[team.id]:undefined;
++ const jBlocked=record?.mode==='JEOPARDY'&&record.streak>=2;
++ const wBlocked=record?.mode==='WORDLE_SELECT'&&record.streak>=2;
+  return <main className="min-h-screen w-screen bg-[#f5e8cc] text-[#24211d] flex flex-col items-center justify-center p-8">
+  <p className="text-sm font-black uppercase tracking-[.3em] text-[#a82e22]">Round 1 · Team turn</p>
+  <h1 className="mt-4 text-4xl md:text-6xl font-black text-center">{team?.name??'No teams'} is playing</h1>
+diff --git a/src/components/projector/WordleBoard.tsx b/src/components/projector/WordleBoard.tsx
+index 0039311..32ea32c 100644
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -3,7 +3,6 @@
+ import { useGameStore } from '@/store/useGameStore';
+ import RoundTimer from '@/components/projector/RoundTimer';
+ import ProjectorStage from '@/components/projector/ProjectorStage';
+-import { ArrowLeft } from 'lucide-react';
+ 
+ /**
+  * Wordle projector screen, laid out on the fixed 1920x1080 stage (see
+@@ -19,7 +18,7 @@ const ROW_GAP = 12;
+ const MAX_TILE = 120;
+ 
+ export default function WordleBoard() {
+-    const { wordles, activeWordleId, teams, config, setView } = useGameStore();
++    const { wordles, activeWordleId, teams, config } = useGameStore();
+     const puzzle = wordles.find((w) => w.id === activeWordleId);
+     if (!puzzle) return null;
+ 
+@@ -143,10 +142,7 @@ export default function WordleBoard() {
+                 </aside>
+             </div>
+ 
+-            <footer className="shrink-0 flex items-center justify-between gap-3 px-1">
+-                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-5 py-2 text-sm font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
+-                    <ArrowLeft size={18} /> Go to Guessing Grid
+-                </button>
++            <footer className="shrink-0 flex items-center justify-end gap-3 px-1">
+                 <div className="text-sm font-black uppercase tracking-wider text-[#514a40]">X-INSIGHTS · WORDLE</div>
+             </footer>
+         </ProjectorStage>
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index e60b3fa..7d3a333 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -6,6 +6,8 @@ import {
+     GameConfig,
+     GameState,
+     JeopardyQuestion,
++    Round1Mode,
++    Round1ModeRecord,
+     Team,
+     WordlePuzzle,
+ } from '@/types/game';
+@@ -182,6 +184,7 @@ const INITIAL_STATE: GameState = {
+     jeopardyTurnIndex: 0,
+     lastRound1Mode: null,
+     round1ModeStreak: 0,
++    round1ModeByTeam: {},
+     jeopardyBoard: [...SAMPLE_JEOPARDY],
+     activeJeopardyId: null,
+     lastGuesstimateResult: null,
+@@ -198,6 +201,21 @@ const INITIAL_STATE: GameState = {
+     roundTimerPhase: 'idle',
+ };
+ 
++// Per-team streak: a team may play the same Round 1 mode twice in a row, but
++// not a third time. Playing a different mode resets that team's streak to 1.
++// Other teams' choices never affect this team's streak.
++function recordRound1Play(
++    history: Record<string, Round1ModeRecord> | undefined,
++    teamId: string,
++    mode: Round1Mode
++): Record<string, Round1ModeRecord> {
++    const prev = history?.[teamId];
++    return {
++        ...(history ?? {}),
++        [teamId]: { mode, streak: prev?.mode === mode ? prev.streak + 1 : 1 },
++    };
++}
++
+ function broadcastState(state: GameState) {
+     if (typeof window === 'undefined') return;
+     try {
+@@ -221,6 +239,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                 jeopardyTurnIndex: next.jeopardyTurnIndex,
+                 lastRound1Mode: next.lastRound1Mode,
+                 round1ModeStreak: next.round1ModeStreak,
++                round1ModeByTeam: next.round1ModeByTeam,
+                 jeopardyBoard: next.jeopardyBoard,
+                 activeJeopardyId: next.activeJeopardyId,
+                 lastGuesstimateResult: next.lastGuesstimateResult,
+@@ -296,6 +315,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                     }
+                     parsed.lastRound1Mode = parsed.lastRound1Mode ?? null;
+                     parsed.round1ModeStreak = parsed.round1ModeStreak ?? 0;
++                    parsed.round1ModeByTeam = parsed.round1ModeByTeam ?? {};
+                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
+                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
+                     // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
+@@ -370,19 +390,14 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+         setJeopardyTurn: (index) => commit(() => ({ jeopardyTurnIndex: index })),
+         startRound1Choice: () => commit(() => ({ activeView: 'R1_CHOICE' })),
+         chooseRound1Mode: (mode) => commit((s) => {
+-            if (s.teams.length === 0) return {};
+-            const forcedMode = s.round1ModeStreak >= 2 && s.lastRound1Mode === mode;
+-            if (forcedMode) return {};
+-            // Switching modes always starts a fresh streak at one. Only consecutive
+-            // selections of the same mode increase the streak.
+-            const nextStreak = s.lastRound1Mode === mode
+-                ? s.round1ModeStreak + 1
+-                : 1;
+-            return {
+-                activeView: mode,
+-                lastRound1Mode: mode,
+-                round1ModeStreak: nextStreak,
+-            };
++            const team = s.teams[s.jeopardyTurnIndex];
++            if (!team) return {};
++            const record = s.round1ModeByTeam?.[team.id];
++            // Block only this team's third consecutive turn in the same mode.
++            if (record?.mode === mode && record.streak >= 2) return {};
++            // The streak is recorded when the turn is actually played, so
++            // going back and re-choosing does not count twice.
++            return { activeView: mode };
+         }),
+         startRoundTimer: () => commit((s) => ({
+             roundTimerStartedAt: Date.now(),
+@@ -456,6 +471,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                 return {
+                     teams: updatedTeams,
+                     jeopardyBoard: updatedBoard,
++                    round1ModeByTeam: recordRound1Play(s.round1ModeByTeam, currentTeam.id, 'JEOPARDY'),
+                     // Keep the question and result on the projector until the host
+                     // explicitly advances to the next team's choice screen.
+                     activeView: 'JEOPARDY',
+@@ -587,25 +603,37 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                         isCompleted: isDone,
+                     } : w),
+                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
+-                    activeView: isDone ? 'R1_CHOICE' : s.activeView,
+-                    jeopardyTurnIndex: isDone && s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : s.jeopardyTurnIndex,
++                    // Stay on the Wordle board after the puzzle ends so the answer
++                    // remains on the projector. The host advances with
++                    // closeWordleAsComplete ("Reveal Result Shown · Next Team").
++                    round1ModeByTeam: isDone
++                        ? recordRound1Play(s.round1ModeByTeam, activeTeam.id, 'WORDLE_SELECT')
++                        : s.round1ModeByTeam,
+                     roundTimerStartedAt: isDone ? null : Date.now(),
+                     roundTimerPhase: isDone ? 'idle' : 'thinking',
+                 };
+             }),
+ 
+         closeWordleAsComplete: () =>
+-            commit((s) => ({
+-                wordles: s.wordles.map((w) =>
+-                    w.id === s.activeWordleId ? { ...w, isCompleted: true } : w
+-                ),
+-                wordleCountCompleted: s.wordleCountCompleted + (s.wordles.find((w) => w.id === s.activeWordleId)?.isCompleted ? 0 : 1),
+-                activeWordleId: null,
+-                activeView: 'R1_CHOICE',
+-                jeopardyTurnIndex: s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : 0,
+-                roundTimerStartedAt: null,
+-                roundTimerPhase: 'idle',
+-            })),
++            commit((s) => {
++                const puzzle = s.wordles.find((w) => w.id === s.activeWordleId);
++                // Count the turn only if it wasn't already counted when solved.
++                const countTurn = Boolean(puzzle && !puzzle.isCompleted && puzzle.assignedTeamId);
++                return {
++                    wordles: s.wordles.map((w) =>
++                        w.id === s.activeWordleId ? { ...w, isCompleted: true } : w
++                    ),
++                    wordleCountCompleted: s.wordleCountCompleted + (puzzle && !puzzle.isCompleted ? 1 : 0),
++                    round1ModeByTeam: countTurn
++                        ? recordRound1Play(s.round1ModeByTeam, puzzle!.assignedTeamId!, 'WORDLE_SELECT')
++                        : s.round1ModeByTeam,
++                    activeWordleId: null,
++                    activeView: 'R1_CHOICE',
++                    jeopardyTurnIndex: s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : 0,
++                    roundTimerStartedAt: null,
++                    roundTimerPhase: 'idle',
++                };
++            }),
+ 
+         // ROUND 2: WORD AUCTION & STEAL
+         initializeRound2: () =>
+diff --git a/src/types/game.ts b/src/types/game.ts
+index 9677a39..85fe859 100644
+--- a/src/types/game.ts
++++ b/src/types/game.ts
+@@ -9,6 +9,13 @@ export type ActiveView =
+     | 'WIKIRACE_FINALE'
+     | 'WIKIRACE_WINNER';
+ 
++export type Round1Mode = 'JEOPARDY' | 'WORDLE_SELECT';
++
++export interface Round1ModeRecord {
++    mode: Round1Mode;
++    streak: number; // consecutive completed turns this team has played this mode
++}
++
+ export interface Team {
+     id: string;
+     name: string;
+@@ -77,7 +84,8 @@ export interface GameState {
+     teams: Team[];
+     jeopardyTurnIndex: number;
+     lastRound1Mode: 'JEOPARDY' | 'WORDLE_SELECT' | null;
+-    round1ModeStreak: number;
++    round1ModeStreak: number; // legacy global streak, no longer used
++    round1ModeByTeam: Record<string, Round1ModeRecord>; // per-team streak, keyed by team id
+     jeopardyBoard: JeopardyQuestion[];
+     activeJeopardyId: string | null;
+     lastGuesstimateResult: {

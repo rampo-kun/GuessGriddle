@@ -1,10 +1,11 @@
 'use client';
 import { useGameStore } from '@/store/useGameStore';
 export default function Round1Choice() {
- const {teams,jeopardyTurnIndex,lastRound1Mode,round1ModeStreak,chooseRound1Mode}=useGameStore();
+ const {teams,jeopardyTurnIndex,round1ModeByTeam,chooseRound1Mode}=useGameStore();
  const team=teams[jeopardyTurnIndex];
- const jBlocked=lastRound1Mode==='JEOPARDY'&&round1ModeStreak>=2;
- const wBlocked=lastRound1Mode==='WORDLE_SELECT'&&round1ModeStreak>=2;
+ const record=team?round1ModeByTeam?.[team.id]:undefined;
+ const jBlocked=record?.mode==='JEOPARDY'&&record.streak>=2;
+ const wBlocked=record?.mode==='WORDLE_SELECT'&&record.streak>=2;
  return <main className="min-h-screen w-screen bg-[#f5e8cc] text-[#24211d] flex flex-col items-center justify-center p-8">
  <p className="text-sm font-black uppercase tracking-[.3em] text-[#a82e22]">Round 1 · Team turn</p>
  <h1 className="mt-4 text-4xl md:text-6xl font-black text-center">{team?.name??'No teams'} is playing</h1>
