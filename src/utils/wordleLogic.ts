@@ -11,16 +11,15 @@ export interface WordleEvaluation {
 }
 
 /**
- * Evaluates a complete-word guess using Wordle-style duplicate-letter handling.
- * Yellow points are awarded once per distinct letter for the whole puzzle.
- * Green points are awarded once per exact answer position for the whole puzzle.
+ * Evaluate one guess independently using standard Wordle duplicate-letter rules.
+ * Scoring is applied by the game store only when this guess solves the puzzle.
  */
 export function evaluateWordleGuess(
     guessRaw: string,
     targetRaw: string,
-    prevGreenIndices: number[],
-    prevDiscoveredLetters: string[],
-    config: { wordleNewGreenPoints: number; wordleNewYellowPoints: number }
+    _prevGreenIndices: number[],
+    _prevDiscoveredLetters: string[],
+    _config: { wordleNewGreenPoints: number; wordleNewYellowPoints: number }
 ): WordleEvaluation {
     const guess = guessRaw.toUpperCase().trim();
     const target = targetRaw.toUpperCase().trim();
@@ -29,19 +28,19 @@ export function evaluateWordleGuess(
         statuses: [],
         pointsByLetter: [],
         pointsEarned: 0,
-        updatedGreenIndices: prevGreenIndices,
-        updatedDiscoveredLetters: prevDiscoveredLetters,
+        updatedGreenIndices: [],
+        updatedDiscoveredLetters: [],
         solved: false,
     };
 
-    if (!/^[A-Z]+$/.test(guess) || !/^[A-Z]+$/.test(target)) return invalid;
+    if (!/^[A-Z]+$/.test(guess) || !/^[A-Z]+$/.test(target) || guess.length !== target.length) {
+        return invalid;
+    }
 
     const statuses: WordleTileStatus[] = Array(guess.length).fill('absent');
     const remaining = new Map<string, number>();
-    const greenIndices = new Set(prevGreenIndices);
-    const discoveredLetters = new Set(prevDiscoveredLetters);
 
-    // Mark greens first, then count only unmatched answer letters for yellows.
+    // Exact matches consume their answer letters before misplaced letters are checked.
     for (let i = 0; i < target.length; i += 1) {
         if (guess[i] === target[i]) {
             statuses[i] = 'correct';
@@ -50,6 +49,7 @@ export function evaluateWordleGuess(
         }
     }
 
+    // A non-green guess is yellow only while an unmatched copy remains in the answer.
     for (let i = 0; i < guess.length; i += 1) {
         if (statuses[i] === 'correct') continue;
         const count = remaining.get(guess[i]) ?? 0;
@@ -59,31 +59,22 @@ export function evaluateWordleGuess(
         }
     }
 
-    const pointsByLetter = statuses.map(() => 0);
-    let pointsEarned = 0;
-    for (let i = 0; i < statuses.length; i += 1) {
-        const letter = guess[i];
-        if (statuses[i] === 'correct') {
-            if (!greenIndices.has(i)) {
-                pointsByLetter[i] = config.wordleNewGreenPoints;
-                pointsEarned += config.wordleNewGreenPoints;
-                greenIndices.add(i);
-            }
-            discoveredLetters.add(letter);
-        } else if (statuses[i] === 'present' && !discoveredLetters.has(letter)) {
-            pointsByLetter[i] = config.wordleNewYellowPoints;
-            pointsEarned += config.wordleNewYellowPoints;
-            discoveredLetters.add(letter);
-        }
-    }
+    const updatedGreenIndices = statuses.reduce<number[]>((indices, status, index) => {
+        if (status === 'correct') indices.push(index);
+        return indices;
+    }, []);
+    const updatedDiscoveredLetters = Array.from(new Set(
+        guess.split('').filter((_, index) => statuses[index] !== 'absent')
+    ));
 
     return {
         valid: true,
         statuses,
-        pointsByLetter,
-        pointsEarned,
-        updatedGreenIndices: Array.from(greenIndices),
-        updatedDiscoveredLetters: Array.from(discoveredLetters),
+        // The store deliberately awards zero for every non-winning attempt.
+        pointsByLetter: statuses.map(() => 0),
+        pointsEarned: 0,
+        updatedGreenIndices,
+        updatedDiscoveredLetters,
         solved: guess === target,
     };
 }

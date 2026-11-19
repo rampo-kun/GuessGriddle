@@ -270,12 +270,12 @@ export default function AdminVaultPage() {
                                     <div>
                                         <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
-                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Green/yellow letter discoveries score immediately</p>
+                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
                                     </div>
                                     <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
                                 </div>
                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
-                                <div className="text-xs text-slate-400">Scoring weights: green {store.config.wordleNewGreenPoints} · yellow {store.config.wordleNewYellowPoints}. Points scale to the puzzle cap; solving awards the remaining points. Easy 150 · Medium 220 · Hard 300 max.</div>
+                                <div className="text-xs text-slate-400">Scoring: a first-guess solve earns full points; each later attempt earns a smaller share (linear decrease). Failed guesses earn 0 points.</div>
                                 {!activeWordle.isCompleted && (
                                     <div className="flex flex-wrap gap-2">
                                         <input type="text" placeholder={`Enter ${activeWordle.targetWord.length}-letter word`} maxLength={activeWordle.targetWord.length} value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />

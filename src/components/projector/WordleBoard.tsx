@@ -26,9 +26,10 @@ export default function WordleBoard() {
     const activeTeam = teams.find((team) => team.id === puzzle.assignedTeamId);
     const maxGuesses = config.wordleMaxGuesses ?? 6;
     const difficulty = puzzle.difficulty ?? 'medium';
-    const pointsCap = difficulty === 'hard' ? 300 : difficulty === 'easy' ? 150 : 220;
-    const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
     const letterCount = puzzle.targetWord.length;
+    // Only a solved guess scores. The available score decreases with each attempt; failed guesses earn zero.
+    const pointsCap = letterCount * Math.max(0, config.wordleNewGreenPoints);
+    const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
 
     // Largest square tile that fits both the width and the height budget.
     const tileByWidth = Math.floor((GRID_MAX_WIDTH - (letterCount - 1) * TILE_GAP) / letterCount);

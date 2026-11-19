@@ -1,0 +1,49 @@
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -515,10 +515,16 @@
+                 // so discovering letters across multiple attempts never accumulates points.
+                 const greenPoints = Math.max(0, s.config.wordleNewGreenPoints);
+                 const yellowPoints = Math.max(0, s.config.wordleNewYellowPoints);
++                // The first guess earns the full base value. Each later winning
++                // guess earns one fewer fraction of that value (e.g. 6 guesses:
++                // 100%, 83%, 67%, 50%, 33%, 17%). Failed guesses always earn 0.
++                const attemptNumber = puzzle.guesses.length + 1;
++                const maxGuesses = Math.max(1, s.config.wordleMaxGuesses);
++                const attemptMultiplier = Math.max(0, (maxGuesses - attemptNumber + 1) / maxGuesses);
+                 const pointsByLetter = result.statuses.map((status) => {
+                     if (!result.solved) return 0;
+-                    if (status === 'correct') return greenPoints;
+-                    if (status === 'present') return yellowPoints;
++                    if (status === 'correct') return Math.round(greenPoints * attemptMultiplier);
++                    if (status === 'present') return Math.round(yellowPoints * attemptMultiplier);
+                     return 0;
+                 });
+                 const pointsEarned = pointsByLetter.reduce((sum, points) => sum + points, 0);
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -27,7 +27,7 @@
+     const maxGuesses = config.wordleMaxGuesses ?? 6;
+     const difficulty = puzzle.difficulty ?? 'medium';
+     const letterCount = puzzle.targetWord.length;
+-    // A solved guess has every letter green; no points are awarded on failed attempts.
++    // Only a solved guess scores. The available score decreases with each attempt; failed guesses earn zero.
+     const pointsCap = letterCount * Math.max(0, config.wordleNewGreenPoints);
+     const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
+ 
+--- a/src/app/x-admin-vault/page.tsx
++++ b/src/app/x-admin-vault/page.tsx
+@@ -270,12 +270,12 @@
+                                     <div>
+                                         <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
+                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
+-                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Green/yellow letter discoveries score immediately</p>
++                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
+                                     </div>
+                                     <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
+                                 </div>
+                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
+-                                <div className="text-xs text-slate-400">Scoring weights: green {store.config.wordleNewGreenPoints} · yellow {store.config.wordleNewYellowPoints}. Points scale to the puzzle cap; solving awards the remaining points. Easy 150 · Medium 220 · Hard 300 max.</div>
++                                <div className="text-xs text-slate-400">Scoring: a first-guess solve earns full points; each later attempt earns a smaller share (linear decrease). Failed guesses earn 0 points.</div>
+                                 {!activeWordle.isCompleted && (
+                                     <div className="flex flex-wrap gap-2">
+                                         <input type="text" placeholder={`Enter ${activeWordle.targetWord.length}-letter word`} maxLength={activeWordle.targetWord.length} value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
