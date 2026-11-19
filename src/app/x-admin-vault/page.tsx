@@ -203,7 +203,12 @@ export default function AdminVaultPage() {
                                     Ballpark answer: {activeQuestion.actualAnswer.toLocaleString()} {activeQuestion.unit}
                                 </div>
 
-                                <div className="flex gap-2">
+                                {store.lastGuesstimateResult && (
+                                    <p className="mb-3 rounded-lg bg-emerald-950/50 p-3 text-sm font-bold text-emerald-300">
+                                        Result is live on the projector. Advance only when the host is ready.
+                                    </p>
+                                )}
+                                <div className="flex flex-wrap gap-2">
                                     <input
                                         type="number"
                                         placeholder={`Enter ${currentJeopardyTeam?.name}'s guess...`}
@@ -221,6 +226,17 @@ export default function AdminVaultPage() {
                                     >
                                         Evaluate
                                     </button>
+                                    {store.lastGuesstimateResult && (
+                                        <button
+                                            onClick={() => {
+                                                store.revealNextRound1Turn();
+                                                setGuessInput('');
+                                            }}
+                                            className="bg-amber-500 hover:bg-amber-400 px-4 py-2 rounded-lg font-black text-slate-950"
+                                        >
+                                            Reveal Result Shown · Next Team
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => store.selectJeopardyTile(null)}
                                         className="bg-slate-800 px-3 py-2 rounded-lg text-sm"

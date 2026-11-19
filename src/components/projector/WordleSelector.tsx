@@ -41,8 +41,8 @@ export default function WordleSelector() {
                 })}
             </div>
             <div className="mt-8 flex w-full max-w-6xl items-center justify-between gap-3">
-                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
-                    <ArrowLeft size={16} /> Go to Guessing Grid
+                <button onClick={() => setView('R1_CHOICE')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
+                    <ArrowLeft size={16} /> Back to Team Choice
                 </button>
                 <p className="text-xs font-black uppercase tracking-[.2em] text-[#766e61]">X-Insights · GuessGriddle</p>
             </div>

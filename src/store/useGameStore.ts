@@ -148,6 +148,7 @@ interface GameActions {
     deleteJeopardyQuestion: (id: string) => void;
     selectJeopardyTile: (id: string | null) => void;
     submitGuesstimate: (guess: number) => void;
+    revealNextRound1Turn: () => void;
 
     // Wordle Actions
     addWordle: (targetWord: string, definition: string, difficulty?: 'easy' | 'medium' | 'hard') => void;
@@ -372,10 +373,15 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             if (s.teams.length === 0) return {};
             const forcedMode = s.round1ModeStreak >= 2 && s.lastRound1Mode === mode;
             if (forcedMode) return {};
+            // Switching modes always starts a fresh streak at one. Only consecutive
+            // selections of the same mode increase the streak.
+            const nextStreak = s.lastRound1Mode === mode
+                ? s.round1ModeStreak + 1
+                : 1;
             return {
                 activeView: mode,
                 lastRound1Mode: mode,
-                round1ModeStreak: s.lastRound1Mode === mode ? s.round1ModeStreak + 1 : 1,
+                round1ModeStreak: nextStreak,
             };
         }),
         startRoundTimer: () => commit((s) => ({
@@ -447,13 +453,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         : item
                 );
 
-                const nextTurn = (s.jeopardyTurnIndex + 1) % s.teams.length;
-
                 return {
                     teams: updatedTeams,
                     jeopardyBoard: updatedBoard,
-                    jeopardyTurnIndex: nextTurn,
-                    activeView: 'R1_CHOICE',
+                    // Keep the question and result on the projector until the host
+                    // explicitly advances to the next team's choice screen.
+                    activeView: 'JEOPARDY',
                     lastGuesstimateResult: {
                         teamName: currentTeam.name,
                         guess,
@@ -465,6 +470,18 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     roundTimerPhase: 'idle',
                 };
             }),
+
+        revealNextRound1Turn: () =>
+            commit((s) => ({
+                jeopardyTurnIndex: s.teams.length
+                    ? (s.jeopardyTurnIndex + 1) % s.teams.length
+                    : 0,
+                activeJeopardyId: null,
+                lastGuesstimateResult: null,
+                activeView: 'R1_CHOICE',
+                roundTimerStartedAt: null,
+                roundTimerPhase: 'idle',
+            })),
 
         addWordle: (targetWord, definition, difficulty = 'medium') =>
             commit((s) => ({

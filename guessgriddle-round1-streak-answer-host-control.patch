@@ -1,0 +1,147 @@
+diff --git a/src/app/x-admin-vault/page.tsx b/src/app/x-admin-vault/page.tsx
+index 499ac00..397dd07 100644
+--- a/src/app/x-admin-vault/page.tsx
++++ b/src/app/x-admin-vault/page.tsx
+@@ -203,7 +203,12 @@ export default function AdminVaultPage() {
+                                     Ballpark answer: {activeQuestion.actualAnswer.toLocaleString()} {activeQuestion.unit}
+                                 </div>
+ 
+-                                <div className="flex gap-2">
++                                {store.lastGuesstimateResult && (
++                                    <p className="mb-3 rounded-lg bg-emerald-950/50 p-3 text-sm font-bold text-emerald-300">
++                                        Result is live on the projector. Advance only when the host is ready.
++                                    </p>
++                                )}
++                                <div className="flex flex-wrap gap-2">
+                                     <input
+                                         type="number"
+                                         placeholder={`Enter ${currentJeopardyTeam?.name}'s guess...`}
+@@ -221,6 +226,17 @@ export default function AdminVaultPage() {
+                                     >
+                                         Evaluate
+                                     </button>
++                                    {store.lastGuesstimateResult && (
++                                        <button
++                                            onClick={() => {
++                                                store.revealNextRound1Turn();
++                                                setGuessInput('');
++                                            }}
++                                            className="bg-amber-500 hover:bg-amber-400 px-4 py-2 rounded-lg font-black text-slate-950"
++                                        >
++                                            Reveal Result Shown · Next Team
++                                        </button>
++                                    )}
+                                     <button
+                                         onClick={() => store.selectJeopardyTile(null)}
+                                         className="bg-slate-800 px-3 py-2 rounded-lg text-sm"
+diff --git a/src/components/projector/JeopardyView.tsx b/src/components/projector/JeopardyView.tsx
+index 913107f..93280bb 100644
+--- a/src/components/projector/JeopardyView.tsx
++++ b/src/components/projector/JeopardyView.tsx
+@@ -1,7 +1,7 @@
+ 'use client';
+ 
+ import { useGameStore } from '@/store/useGameStore';
+-import { Trophy, Sparkles, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
++import { Trophy, Sparkles, CheckCircle2, XCircle } from 'lucide-react';
+ import RoundTimer from '@/components/projector/RoundTimer';
+ 
+ export default function JeopardyView() {
+@@ -11,7 +11,6 @@ export default function JeopardyView() {
+         jeopardyBoard,
+         activeJeopardyId,
+         lastGuesstimateResult,
+-        setView,
+     } = useGameStore();
+ 
+     const currentTeam = teams[jeopardyTurnIndex];
+@@ -45,9 +44,6 @@ export default function JeopardyView() {
+                         </div>
+                     ))}
+                 </div>
+-                <button onClick={() => setView('WORDLE_SELECT')} className="shrink-0 inline-flex items-center gap-2 rounded-xl border-2 border-[#f2c14e] bg-[#f2c14e] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#24211d] shadow-md hover:bg-[#ffe08a]">
+-                    Go to Wordle <ArrowRight size={17} />
+-                </button>
+             </div>
+ 
+             {/* Jeopardy Grid */}
+diff --git a/src/components/projector/WordleSelector.tsx b/src/components/projector/WordleSelector.tsx
+index 8763d7f..92c6693 100644
+--- a/src/components/projector/WordleSelector.tsx
++++ b/src/components/projector/WordleSelector.tsx
+@@ -41,8 +41,8 @@ export default function WordleSelector() {
+                 })}
+             </div>
+             <div className="mt-8 flex w-full max-w-6xl items-center justify-between gap-3">
+-                <button onClick={() => setView('JEOPARDY')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
+-                    <ArrowLeft size={16} /> Go to Guessing Grid
++                <button onClick={() => setView('R1_CHOICE')} className="inline-flex items-center gap-2 rounded-xl border-2 border-[#303b50] bg-[#fff7e8] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#303b50] shadow-sm hover:bg-[#303b50] hover:text-white">
++                    <ArrowLeft size={16} /> Back to Team Choice
+                 </button>
+                 <p className="text-xs font-black uppercase tracking-[.2em] text-[#766e61]">X-Insights · GuessGriddle</p>
+             </div>
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index a7577f2..e60b3fa 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -148,6 +148,7 @@ interface GameActions {
+     deleteJeopardyQuestion: (id: string) => void;
+     selectJeopardyTile: (id: string | null) => void;
+     submitGuesstimate: (guess: number) => void;
++    revealNextRound1Turn: () => void;
+ 
+     // Wordle Actions
+     addWordle: (targetWord: string, definition: string, difficulty?: 'easy' | 'medium' | 'hard') => void;
+@@ -372,10 +373,15 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+             if (s.teams.length === 0) return {};
+             const forcedMode = s.round1ModeStreak >= 2 && s.lastRound1Mode === mode;
+             if (forcedMode) return {};
++            // Switching modes always starts a fresh streak at one. Only consecutive
++            // selections of the same mode increase the streak.
++            const nextStreak = s.lastRound1Mode === mode
++                ? s.round1ModeStreak + 1
++                : 1;
+             return {
+                 activeView: mode,
+                 lastRound1Mode: mode,
+-                round1ModeStreak: s.lastRound1Mode === mode ? s.round1ModeStreak + 1 : 1,
++                round1ModeStreak: nextStreak,
+             };
+         }),
+         startRoundTimer: () => commit((s) => ({
+@@ -447,13 +453,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                         : item
+                 );
+ 
+-                const nextTurn = (s.jeopardyTurnIndex + 1) % s.teams.length;
+-
+                 return {
+                     teams: updatedTeams,
+                     jeopardyBoard: updatedBoard,
+-                    jeopardyTurnIndex: nextTurn,
+-                    activeView: 'R1_CHOICE',
++                    // Keep the question and result on the projector until the host
++                    // explicitly advances to the next team's choice screen.
++                    activeView: 'JEOPARDY',
+                     lastGuesstimateResult: {
+                         teamName: currentTeam.name,
+                         guess,
+@@ -466,6 +471,18 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                 };
+             }),
+ 
++        revealNextRound1Turn: () =>
++            commit((s) => ({
++                jeopardyTurnIndex: s.teams.length
++                    ? (s.jeopardyTurnIndex + 1) % s.teams.length
++                    : 0,
++                activeJeopardyId: null,
++                lastGuesstimateResult: null,
++                activeView: 'R1_CHOICE',
++                roundTimerStartedAt: null,
++                roundTimerPhase: 'idle',
++            })),
++
+         addWordle: (targetWord, definition, difficulty = 'medium') =>
+             commit((s) => ({
+                 wordles: [
