@@ -27,16 +27,43 @@ const DEFAULT_CONFIG: GameConfig = {
     r2StealRefundPercent: 50,
     // Wiki Race words are recognizable Wikipedia pages with multiple possible cross-links.
     startingWordPool: [
-        'ALGORITHM', 'STATISTICS', 'DATABASE', 'MACHINE LEARNING',
-        'DATA VISUALIZATION', 'REGRESSION', 'PROBABILITY', 'ECONOMICS',
-        'COMPUTER NETWORK', 'ARTIFICIAL INTELLIGENCE', 'BUSINESS INTELLIGENCE', 'CYBERSECURITY',
+        'ALGORITHM', 'STATISTICS', 'DATABASE', 'MACHINE LEARNING', 'DATA VISUALIZATION',
+        'REGRESSION', 'PROBABILITY', 'ECONOMICS', 'COMPUTER NETWORK', 'ARTIFICIAL INTELLIGENCE',
+        'BUSINESS INTELLIGENCE', 'CYBERSECURITY', 'CLIMATE CHANGE', 'SOLAR SYSTEM',
+        'PHOTOGRAPHY', 'DEMOCRACY', 'EVOLUTION', 'CRICKET', 'GLOBALIZATION', 'RENEWABLE ENERGY',
+        'NEUROSCIENCE', 'PSYCHOLOGY', 'INTERNET', 'OCEAN', 'SPACE EXPLORATION',
     ],
     auctionWordPool: [
-        'INTERNET', 'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA',
-        'VIDEO GAME', 'ROBOT', 'COMPUTER', 'COFFEE', 'PIZZA',
-        'SOLAR ENERGY', 'ELECTRIC CAR',
+        'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA', 'VIDEO GAME', 'ROBOT',
+        'COMPUTER', 'COFFEE', 'PIZZA', 'SOLAR ENERGY', 'ELECTRIC CAR', 'JAPAN',
+        'UNITED STATES', 'MOUNT EVEREST', 'TAJ MAHAL', 'LEONARDO DA VINCI',
+        'ALBERT EINSTEIN', 'WILLIAM SHAKESPEARE', 'MARIE CURIE', 'NELSON MANDELA',
+        'BARACK OBAMA', 'CRICKET WORLD CUP', 'OLYMPIC GAMES', 'FOOTBALL',
+        'TENNIS', 'CHESS', 'FORMULA ONE', 'BOLLYWOOD', 'HOLLYWOOD', 'WALT DISNEY',
+        'STAR WARS', 'HARRY POTTER', 'THE BEATLES', 'MICHAEL JACKSON', 'TAYLOR SWIFT',
+        'MARIO', 'POKEMON', 'MINECRAFT', 'YOUTUBE', 'NETFLIX', 'INSTAGRAM',
+        'WIKIPEDIA', 'ARTIFICIAL INTELLIGENCE', 'BLOCKCHAIN', 'QUANTUM COMPUTING',
+        'ELECTRICITY', 'GRAVITY', 'BLACK HOLE', 'DNA', 'VACCINE', 'VOLCANO',
+        'EARTHQUAKE', 'AMAZON RAINFOREST', 'GREAT BARRIER REEF', 'SAHARA',
+        'NILE', 'GANGES', 'HIMALAYAS', 'PARIS', 'TOKYO', 'NEW YORK CITY',
+        'SINGAPORE', 'DUBAI', 'ITALY', 'BRAZIL', 'EGYPT', 'AUSTRALIA',
+        'CHOCOLATE', 'SUSHI', 'MASALA DOSA', 'COCA-COLA',
+        'TITANIC', 'APOLLO 11', 'INTERNATIONAL SPACE STATION', 'MOBILE PHONE',
+        'WORLD WIDE WEB', 'UNITED NATIONS', 'RED CROSS', 'NOBEL PRIZE',
+        'FIFA', 'NBA', 'TOYOTA', 'TESLA', 'NIKE', 'ADIDAS',
     ],
 };
+
+const PRE_EXPANSION_STARTING_WORD_POOL = [
+    'ALGORITHM', 'STATISTICS', 'DATABASE', 'MACHINE LEARNING',
+    'DATA VISUALIZATION', 'REGRESSION', 'PROBABILITY', 'ECONOMICS',
+    'COMPUTER NETWORK', 'ARTIFICIAL INTELLIGENCE', 'BUSINESS INTELLIGENCE', 'CYBERSECURITY',
+];
+const PRE_EXPANSION_AUCTION_WORD_POOL = [
+    'INTERNET', 'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA',
+    'VIDEO GAME', 'ROBOT', 'COMPUTER', 'COFFEE', 'PIZZA',
+    'SOLAR ENERGY', 'ELECTRIC CAR',
+];
 
 const LEGACY_STARTING_WORD_POOL = ['KALEIDOSCOPE', 'CHAMELEON', 'ESPRESSO', 'LABYRINTH', 'MONSOON', 'ORIGAMI'];
 const LEGACY_AUCTION_WORD_POOL = [
@@ -243,13 +270,15 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     if (parsed.config && Array.isArray(parsed.config.startingWordPool) &&
                         (JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL) ||
                             JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(PREVIOUS_DEFAULT_STARTING_WORD_POOL) ||
-                            JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(SHIPPED_DEFAULT_STARTING_WORD_POOL))) {
+                            JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(SHIPPED_DEFAULT_STARTING_WORD_POOL) ||
+                            JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(PRE_EXPANSION_STARTING_WORD_POOL))) {
                         parsed.config = { ...parsed.config, startingWordPool: DEFAULT_CONFIG.startingWordPool };
                     }
                     if (parsed.config && Array.isArray(parsed.config.auctionWordPool) &&
                         (JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(LEGACY_AUCTION_WORD_POOL) ||
                             JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(PREVIOUS_DEFAULT_AUCTION_WORD_POOL) ||
-                            JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(SHIPPED_DEFAULT_AUCTION_WORD_POOL))) {
+                            JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(SHIPPED_DEFAULT_AUCTION_WORD_POOL) ||
+                            JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(PRE_EXPANSION_AUCTION_WORD_POOL))) {
                         parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
                     }
                     if (parsed.config) {
