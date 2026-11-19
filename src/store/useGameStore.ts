@@ -10,7 +10,6 @@ import {
     WordlePuzzle,
 } from '@/types/game';
 import { evaluateWordleGuess } from '@/utils/wordleLogic';
-import { IMAGE_VALUATION_QUESTIONS } from '@/data/jeopardyImageQuestions';
 import { SAMPLE_JEOPARDY } from '@/data/jeopardyQuestions';
 
 const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
@@ -138,6 +137,8 @@ interface GameActions {
     removeTeam: (id: string) => void;
     adjustTeamScore: (id: string, delta: number) => void;
     setJeopardyTurn: (index: number) => void;
+    chooseRound1Mode: (mode: 'JEOPARDY' | 'WORDLE_SELECT') => void;
+    startRound1Choice: () => void;
     startRoundTimer: () => void;
     endThinkingTime: () => void;
     resetRoundTimer: () => void;
@@ -178,7 +179,9 @@ const INITIAL_STATE: GameState = {
         { id: 't3', name: 'Bayesian Beasts', score: 0, startingWord: '', words: [] },
     ],
     jeopardyTurnIndex: 0,
-    jeopardyBoard: [...SAMPLE_JEOPARDY, ...IMAGE_VALUATION_QUESTIONS],
+    lastRound1Mode: null,
+    round1ModeStreak: 0,
+    jeopardyBoard: [...SAMPLE_JEOPARDY],
     activeJeopardyId: null,
     lastGuesstimateResult: null,
     wordles: SAMPLE_WORDLES,
@@ -215,6 +218,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 activeView: next.activeView,
                 teams: next.teams,
                 jeopardyTurnIndex: next.jeopardyTurnIndex,
+                lastRound1Mode: next.lastRound1Mode,
+                round1ModeStreak: next.round1ModeStreak,
                 jeopardyBoard: next.jeopardyBoard,
                 activeJeopardyId: next.activeJeopardyId,
                 lastGuesstimateResult: next.lastGuesstimateResult,
@@ -288,6 +293,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         }
                         parsed.config = { ...DEFAULT_CONFIG, ...parsed.config };
                     }
+                    parsed.lastRound1Mode = parsed.lastRound1Mode ?? null;
+                    parsed.round1ModeStreak = parsed.round1ModeStreak ?? 0;
                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
                     // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
@@ -312,8 +319,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     }
                     // Replace the previous shipped Jeopardy questionnaire while preserving custom boards.
                     if (Array.isArray(parsed.jeopardyBoard) &&
-                        parsed.jeopardyBoard.some((question: JeopardyQuestion) => question.id === 'j1' && question.category === 'SPORTS')) {
-                        parsed.jeopardyBoard = [...SAMPLE_JEOPARDY, ...IMAGE_VALUATION_QUESTIONS];
+                        parsed.jeopardyBoard.some((question: JeopardyQuestion) => question.isImageQuestion || question.id.startsWith('image-') || (question.id === 'j1' && question.category === 'SPORTS'))) {
+                        parsed.jeopardyBoard = [...SAMPLE_JEOPARDY];
                         parsed.activeJeopardyId = null;
                         parsed.lastGuesstimateResult = null;
                     }
@@ -360,6 +367,17 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             })),
 
         setJeopardyTurn: (index) => commit(() => ({ jeopardyTurnIndex: index })),
+        startRound1Choice: () => commit(() => ({ activeView: 'R1_CHOICE' })),
+        chooseRound1Mode: (mode) => commit((s) => {
+            if (s.teams.length === 0) return {};
+            const forcedMode = s.round1ModeStreak >= 2 && s.lastRound1Mode === mode;
+            if (forcedMode) return {};
+            return {
+                activeView: mode,
+                lastRound1Mode: mode,
+                round1ModeStreak: s.lastRound1Mode === mode ? s.round1ModeStreak + 1 : 1,
+            };
+        }),
         startRoundTimer: () => commit((s) => ({
             roundTimerStartedAt: Date.now(),
             roundTimerPhase: 'thinking',
@@ -435,6 +453,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     teams: updatedTeams,
                     jeopardyBoard: updatedBoard,
                     jeopardyTurnIndex: nextTurn,
+                    activeView: 'R1_CHOICE',
                     lastGuesstimateResult: {
                         teamName: currentTeam.name,
                         guess,
@@ -551,6 +570,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         isCompleted: isDone,
                     } : w),
                     wordleCountCompleted: isDone ? s.wordleCountCompleted + 1 : s.wordleCountCompleted,
+                    activeView: isDone ? 'R1_CHOICE' : s.activeView,
+                    jeopardyTurnIndex: isDone && s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : s.jeopardyTurnIndex,
                     roundTimerStartedAt: isDone ? null : Date.now(),
                     roundTimerPhase: isDone ? 'idle' : 'thinking',
                 };
@@ -563,7 +584,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 ),
                 wordleCountCompleted: s.wordleCountCompleted + (s.wordles.find((w) => w.id === s.activeWordleId)?.isCompleted ? 0 : 1),
                 activeWordleId: null,
-                activeView: 'WORDLE_SELECT',
+                activeView: 'R1_CHOICE',
+                jeopardyTurnIndex: s.teams.length ? (s.jeopardyTurnIndex + 1) % s.teams.length : 0,
                 roundTimerStartedAt: null,
                 roundTimerPhase: 'idle',
             })),

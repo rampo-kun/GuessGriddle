@@ -1,5 +1,6 @@
 export type ActiveView =
     | 'LOBBY'
+    | 'R1_CHOICE'
     | 'JEOPARDY'
     | 'WORDLE_SELECT'
     | 'WORDLE_PLAY'
@@ -75,6 +76,8 @@ export interface GameState {
     activeView: ActiveView;
     teams: Team[];
     jeopardyTurnIndex: number;
+    lastRound1Mode: 'JEOPARDY' | 'WORDLE_SELECT' | null;
+    round1ModeStreak: number;
     jeopardyBoard: JeopardyQuestion[];
     activeJeopardyId: string | null;
     lastGuesstimateResult: {

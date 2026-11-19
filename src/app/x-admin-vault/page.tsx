@@ -25,7 +25,6 @@ export default function AdminVaultPage() {
     const [wWord, setWWord] = useState('');
     const [wDef, setWDef] = useState('');
     const [wDifficulty, setWDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-    const [wordleTeamId, setWordleTeamId] = useState('');
 
     // Round 2 Assign/Steal selectors
     const [targetTeamId, setTargetTeamId] = useState('');
@@ -52,9 +51,7 @@ export default function AdminVaultPage() {
     const activeWordleTeam = activeWordle
         ? store.teams.find((team) => team.id === activeWordle.assignedTeamId)
         : undefined;
-    const selectedWordleTeamId = store.teams.some((team) => team.id === wordleTeamId)
-        ? wordleTeamId
-        : store.teams[0]?.id ?? '';
+    const selectedWordleTeamId = currentJeopardyTeam?.id ?? '';
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
@@ -141,7 +138,7 @@ export default function AdminVaultPage() {
                             1. Jeopardy & Guesstimate Control
                         </h2>
 
-                        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 space-y-3">
+                        <button onClick={() => store.startRound1Choice()} className="mb-4 rounded-lg bg-amber-500 px-4 py-2 font-black text-slate-950">Show Team Choice Screen</button>\n                        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3 space-y-3">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <p className="text-sm font-black text-amber-300">Round 1 thinking timer</p>
@@ -242,12 +239,7 @@ export default function AdminVaultPage() {
                             <p className="text-xs text-slate-400 mt-1">Choose any team and difficulty. A team may play multiple different Wordle puzzles; each puzzle can only be assigned once.</p>
                         </div>
 
-                        <label className="block text-sm font-bold text-slate-300">
-                            Team playing this Wordle
-                            <select value={selectedWordleTeamId} onChange={(e) => setWordleTeamId(e.target.value)} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2">
-                                {store.teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-                            </select>
-                        </label>
+                        <div className="rounded-lg bg-slate-950 p-3 text-sm">Wordle team: <strong className="text-emerald-300">{currentJeopardyTeam?.name ?? 'No active team'}</strong></div>
 
                         {(['easy', 'medium', 'hard'] as const).map((difficulty) => (
                             <div key={difficulty} className="space-y-2">

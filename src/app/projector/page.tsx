@@ -8,11 +8,13 @@ import WordleBoard from '@/components/projector/WordleBoard';
 import LeaderboardView from '@/components/projector/LeaderboardView';
 import Round2Market from '@/components/projector/Round2Market';
 import WikiWinnerView from '@/components/projector/WikiWinnerView';
+import Round1Choice from '@/components/projector/Round1Choice';
 
 export default function ProjectorPage() {
     const { activeView, teams, hydrateFromStorage } = useGameStore();
     useEffect(() => { hydrateFromStorage(); }, [hydrateFromStorage]);
 
+    if (activeView === 'R1_CHOICE') return <Round1Choice />;
     if (activeView === 'JEOPARDY') return <JeopardyView />;
     if (activeView === 'WORDLE_SELECT') return <WordleSelector />;
     if (activeView === 'WORDLE_PLAY') return <WordleBoard />;

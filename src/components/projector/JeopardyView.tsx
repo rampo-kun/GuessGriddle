@@ -102,22 +102,9 @@ export default function JeopardyView() {
                             {activeQuestion.category} • {activeQuestion.points} PTS
                         </div>
 
-                        {activeQuestion.isImageQuestion && activeQuestion.imageUrl ? (
-                            <div className="mb-8">
-                                <h1 className="text-2xl md:text-4xl font-extrabold leading-tight text-[#24211d] mb-5">
-                                    Estimate the combined market value of all items shown in this image, in Indian rupees.
-                                </h1>
-                                <img
-                                    src={activeQuestion.imageUrl}
-                                    alt="Image valuation challenge"
-                                    className="mx-auto max-h-[42vh] max-w-full rounded-2xl border border-[#d8c8a8] object-contain"
-                                />
-                            </div>
-                        ) : (
-                            <h1 className="text-2xl md:text-4xl font-extrabold leading-tight text-[#24211d] mb-7">
-                                {activeQuestion.question}
-                            </h1>
-                        )}
+                        <h1 className="text-2xl md:text-4xl font-extrabold leading-tight text-[#24211d] mb-7">
+                            {activeQuestion.question}
+                        </h1>
 
                         <div className="text-lg text-[#62594d] mb-2">
                             Unit: <span className="text-[#a82e22] font-bold">{activeQuestion.unit}</span>
