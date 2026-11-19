@@ -200,11 +200,10 @@ export default function AdminVaultPage() {
                         {activeQuestion && (
                             <div className="bg-slate-950 border border-indigo-500 rounded-xl p-4">
                                 <div className="text-sm font-bold text-amber-400 mb-1">
-                                    SECRET ACCEPTABLE RANGE: {activeQuestion.minLimit.toLocaleString()} –{' '}
-                                    {activeQuestion.maxLimit.toLocaleString()} {activeQuestion.unit}
+                                    FULL CREDIT ±{25 + (Math.max(1, Math.min(5, Math.round(activeQuestion.points / 100))) - 1) * 5}% · HALF CREDIT ±{50 + (Math.max(1, Math.min(5, Math.round(activeQuestion.points / 100))) - 1) * 5}%
                                 </div>
                                 <div className="text-xs text-slate-400 mb-3">
-                                    Exact Answer: {activeQuestion.actualAnswer.toLocaleString()}
+                                    Ballpark answer: {activeQuestion.actualAnswer.toLocaleString()} {activeQuestion.unit}
                                 </div>
 
                                 <div className="flex gap-2">
@@ -429,6 +428,21 @@ export default function AdminVaultPage() {
                             </div>
                         </div>
                     )}
+                    <section className="rounded-2xl border border-amber-500/40 bg-slate-950 p-5 space-y-4">
+                        <div>
+                            <h3 className="text-lg font-black text-amber-300">Wikipedia Race: Page Check-off & Winner</h3>
+                            <p className="text-xs text-slate-400">Mark pages as visited as soon as a team reaches them. They can be completed in any order.</p>
+                        </div>
+                        {store.teams.map((team) => {
+                            const pages = [team.startingWord, ...(team.words ?? [])].filter(Boolean);
+                            const visited = team.visitedWords ?? [];
+                            return <div key={team.id} className="rounded-xl border border-slate-800 p-3">
+                                <div className="mb-2 flex items-center justify-between gap-2"><strong>{team.name}</strong><span className="text-xs text-emerald-300">{pages.filter((word) => visited.includes(word)).length}/{pages.length} pages visited</span></div>
+                                <div className="flex flex-wrap gap-2">{pages.map((word) => <button key={word} onClick={() => store.toggleWikiWordVisited(team.id, word)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${visited.includes(word) ? 'border-emerald-400 bg-emerald-900/50 text-emerald-200' : 'border-slate-700 bg-slate-900 text-slate-300'}`}>{visited.includes(word) ? '✓ ' : ''}{word}</button>)}</div>
+                            </div>;
+                        })}
+                        <div className="border-t border-slate-800 pt-4"><p className="mb-2 text-sm font-bold text-slate-200">Choose the winner (host decision)</p><div className="flex flex-wrap gap-2">{store.teams.map((team) => <button key={team.id} onClick={() => store.chooseWikiWinner(team.id)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-black text-slate-950 hover:bg-amber-500">Display {team.name} as Winner</button>)}<button onClick={() => store.chooseWikiWinner(null)} className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-bold">Return to Wiki Race</button></div></div>
+                    </section>
                 </div>
             )}
 

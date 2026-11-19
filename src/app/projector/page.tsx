@@ -7,6 +7,7 @@ import WordleSelector from '@/components/projector/WordleSelector';
 import WordleBoard from '@/components/projector/WordleBoard';
 import LeaderboardView from '@/components/projector/LeaderboardView';
 import Round2Market from '@/components/projector/Round2Market';
+import WikiWinnerView from '@/components/projector/WikiWinnerView';
 
 export default function ProjectorPage() {
     const { activeView, teams, hydrateFromStorage } = useGameStore();
@@ -18,6 +19,7 @@ export default function ProjectorPage() {
     if (activeView === 'R1_LEADERBOARD') return <LeaderboardView />;
     if (activeView === 'ROUND2_MARKET') return <Round2Market isFinale={false} />;
     if (activeView === 'WIKIRACE_FINALE') return <Round2Market isFinale={true} />;
+    if (activeView === 'WIKIRACE_WINNER') return <WikiWinnerView />;
 
     return (
         <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#f5e8cc] px-8 py-12 text-center text-[#24211d]">

@@ -101,7 +101,7 @@ export default function JeopardyView() {
                         {activeQuestion.isImageQuestion && activeQuestion.imageUrl ? (
                             <div className="mb-8">
                                 <h1 className="text-2xl md:text-4xl font-extrabold leading-tight text-[#24211d] mb-5">
-                                    Estimate the total worth of everything shown in this image.
+                                    Estimate the combined market value of all items shown in this image, in Indian rupees.
                                 </h1>
                                 <img
                                     src={activeQuestion.imageUrl}
@@ -115,9 +115,10 @@ export default function JeopardyView() {
                             </h1>
                         )}
 
-                        <div className="text-lg text-[#62594d] mb-6">
+                        <div className="text-lg text-[#62594d] mb-2">
                             Unit: <span className="text-[#a82e22] font-bold">{activeQuestion.unit}</span>
                         </div>
+                        <p className="mb-6 text-xs font-bold text-[#766e61]">Scoring tolerance rises with difficulty: 100 pts = ±25% full / ±50% half; 500 pts = ±45% full / ±70% half.</p>
 
                         {lastGuesstimateResult && (
                             <div className={`mt-8 overflow-hidden rounded-3xl border-4 text-left shadow-2xl ${lastGuesstimateResult.won ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50'}`}>
@@ -126,7 +127,7 @@ export default function JeopardyView() {
                                         {lastGuesstimateResult.won ? <CheckCircle2 className="h-10 w-10" /> : <XCircle className="h-10 w-10" />}
                                         <div>
                                             <p className="text-xs font-black uppercase tracking-[.22em] opacity-80">Official result · {lastGuesstimateResult.teamName}</p>
-                                            <h2 className="text-2xl md:text-4xl font-black">{lastGuesstimateResult.won ? 'That’s correct!' : 'Not quite!'}</h2>
+                                            <h2 className="text-2xl md:text-4xl font-black">{lastGuesstimateResult.points === activeQuestion.points ? 'Perfect estimate!' : lastGuesstimateResult.points > 0 ? 'Close enough · Half credit!' : 'Not quite!'}</h2>
                                         </div>
                                     </div>
                                     <div className="rounded-xl bg-white/15 px-5 py-3 text-center">
@@ -145,7 +146,7 @@ export default function JeopardyView() {
                                     </div>
                                 </div>
                                 <p className="px-5 pb-5 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
-                                    {lastGuesstimateResult.won ? 'Within the accepted range · Jeopardy points awarded' : 'Outside the accepted range · No points awarded'}
+                                    {lastGuesstimateResult.points === activeQuestion.points ? 'Within full-credit tolerance · Full points awarded' : lastGuesstimateResult.points > 0 ? 'Within half-credit tolerance · Half points awarded' : 'Outside the accepted range · No points awarded'}
                                 </p>
                             </div>
                         )}

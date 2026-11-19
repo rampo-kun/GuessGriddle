@@ -1,29 +1,10 @@
 import type { JeopardyQuestion } from '@/types/game';
 
-/**
- * Code-managed image valuation questions.
- *
- * 1. Put image files in: public/jeopardy/
- * 2. Add one object per image below.
- * 3. Use a path beginning with /jeopardy/, e.g. /jeopardy/market-basket.jpg
- *
- * The category is created automatically from the category field. Keep the same
- * category name for all image questions that should appear in one column.
- */
+/** Image-based valuation questions. Values are approximate Indian retail/market estimates. */
 export const IMAGE_VALUATION_QUESTIONS: JeopardyQuestion[] = [
-    // Example — copy this object, replace the image path and valuation details,
-    // then add the corresponding image file to public/jeopardy/.
-    // {
-    //     id: 'image-worth-100',
-    //     category: 'IMAGE VALUATION',
-    //     points: 100,
-    //     question: 'Estimate the total worth of everything shown in this image.',
-    //     actualAnswer: 250000,
-    //     minLimit: 200000,
-    //     maxLimit: 300000,
-    //     unit: 'INR',
-    //     isImageQuestion: true,
-    //     imageUrl: '/jeopardy/market-basket.jpg',
-    //     isCompleted: false,
-    // },
+    { id: 'image-streaming', category: 'IMAGE VALUATION', points: 100, question: 'Estimate the combined value of all items shown.', actualAnswer: 6385, minLimit: 6385, maxLimit: 6385, unit: 'INR', isImageQuestion: true, imageUrl: '/jeopardy/streaming-services.png', isCompleted: false },
+    { id: 'image-drinks', category: 'IMAGE VALUATION', points: 200, question: 'Estimate the combined value of all items shown.', actualAnswer: 390, minLimit: 390, maxLimit: 390, unit: 'INR', isImageQuestion: true, imageUrl: '/jeopardy/drinks.png', isCompleted: false },
+    { id: 'image-dzire-gpu', category: 'IMAGE VALUATION', points: 300, question: 'Estimate the combined value of all items shown.', actualAnswer: 1250000, minLimit: 1250000, maxLimit: 1250000, unit: 'INR', isImageQuestion: true, imageUrl: '/jeopardy/dzire-rtx5090.png', isCompleted: false },
+    { id: 'image-phones-ps5', category: 'IMAGE VALUATION', points: 400, question: 'Estimate the combined value of all items shown.', actualAnswer: 340000, minLimit: 340000, maxLimit: 340000, unit: 'INR', isImageQuestion: true, imageUrl: '/jeopardy/phones-ps5.png', isCompleted: false },
+    { id: 'image-ferrari-maggi', category: 'IMAGE VALUATION', points: 500, question: 'Estimate the combined value of all items shown.', actualAnswer: 40000030, minLimit: 40000030, maxLimit: 40000030, unit: 'INR', isImageQuestion: true, imageUrl: '/jeopardy/ferrari-maggi.png', isCompleted: false },
 ];

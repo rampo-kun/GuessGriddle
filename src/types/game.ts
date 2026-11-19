@@ -5,7 +5,8 @@ export type ActiveView =
     | 'WORDLE_PLAY'
     | 'R1_LEADERBOARD'
     | 'ROUND2_MARKET'
-    | 'WIKIRACE_FINALE';
+    | 'WIKIRACE_FINALE'
+    | 'WIKIRACE_WINNER';
 
 export interface Team {
     id: string;
@@ -13,6 +14,7 @@ export interface Team {
     score: number;
     startingWord: string;
     words: string[]; // Max 3 acquired words (Total 4 with startingWord)
+    visitedWords?: string[]; // Wiki pages successfully visited, in any order
 }
 
 export interface JeopardyQuestion {
@@ -92,6 +94,7 @@ export interface GameState {
     currentMarketWord: string | null;
     usedPoolWords: string[];
     r2LastActionBanner: string | null;
+    winnerTeamId: string | null;
 
     config: GameConfig;
     roundTimerStartedAt: number | null;

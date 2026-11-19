@@ -129,7 +129,7 @@ export default function Round2Market({
                     </div>
 
                     <div className="text-xs font-black uppercase tracking-widest text-[#766E61]">
-                        {isFinale ? 'Connect all four words' : 'Live team standings'}
+                        {isFinale ? '✓ = Wikipedia page visited by host' : 'Live team standings'}
                     </div>
                 </div>
 
@@ -211,7 +211,7 @@ export default function Round2Market({
                                             )}
 
                                             <span className="text-sm font-black truncate">
-                                                {word || '—'}
+                                                {word || '—'}{isFinale && word && (team.visitedWords ?? []).includes(word) ? ' ✓' : ''}
                                             </span>
                                         </div>
                                     ))}
