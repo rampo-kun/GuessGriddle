@@ -13,7 +13,6 @@ export default function WikiWinnerView() {
         {winner ? <>
             <Trophy className="mt-10 h-28 w-28 text-[#FFD447]" />
             <div className="mt-5 rounded-3xl border-4 border-[#FFD447] bg-[#FFF3D6] px-12 py-8 text-5xl font-black text-[#24211D] shadow-2xl md:text-7xl">{winner.name}</div>
-            <p className="mt-6 text-2xl font-bold text-[#FFD447]">{winner.score.toLocaleString()} POINTS</p>
         </> : <p className="mt-8 text-2xl text-amber-200">Winner not selected</p>}
     </main>;
 }

@@ -118,7 +118,6 @@ export default function JeopardyView() {
                         <div className="text-lg text-[#62594d] mb-2">
                             Unit: <span className="text-[#a82e22] font-bold">{activeQuestion.unit}</span>
                         </div>
-                        <p className="mb-6 text-xs font-bold text-[#766e61]">Scoring tolerance rises with difficulty: 100 pts = ±25% full / ±50% half; 500 pts = ±45% full / ±70% half.</p>
 
                         {lastGuesstimateResult && (
                             <div className={`mt-8 overflow-hidden rounded-3xl border-4 text-left shadow-2xl ${lastGuesstimateResult.won ? 'border-emerald-500 bg-emerald-50' : 'border-rose-500 bg-rose-50'}`}>

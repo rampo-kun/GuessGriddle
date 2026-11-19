@@ -251,7 +251,7 @@ export default function AdminVaultPage() {
 
                         {(['easy', 'medium', 'hard'] as const).map((difficulty) => (
                             <div key={difficulty} className="space-y-2">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-amber-300">{difficulty} · {difficulty === 'easy' ? '90' : difficulty === 'medium' ? '130' : '180'} max points</h3>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-amber-300">{difficulty} · {difficulty === 'easy' ? '150' : difficulty === 'medium' ? '220' : '300'} max points</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {store.wordles.filter((p) => (p.difficulty ?? 'medium') === difficulty).map((puzzle) => {
                                         const puzzleAssignedToAnotherTeam = Boolean(puzzle.assignedTeamId && puzzle.assignedTeamId !== selectedWordleTeamId);
@@ -275,7 +275,7 @@ export default function AdminVaultPage() {
                                     <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-rose-600 text-white px-3 py-2 rounded font-bold">End Wordle & Return to Grid</button>
                                 </div>
                                 <p className="text-sm text-amber-300">SECRET WORD: {activeWordle.targetWord}</p>
-                                <div className="text-xs text-slate-400">New green letters: base {store.config.wordleNewGreenPoints} pts · New yellow letters: base {store.config.wordleNewYellowPoints} pts · Easy 0.75×, Medium 1×, Hard 1.5×. Each puzzle has a difficulty-based points cap.</div>
+                                <div className="text-xs text-slate-400">New green position: base {store.config.wordleNewGreenPoints} pts · New yellow letter: base {store.config.wordleNewYellowPoints} pts · Easy 0.75× (150 cap), Medium 1× (220 cap), Hard 1.5× (300 cap). Each new discovery scores once per puzzle.</div>
                                 {!activeWordle.isCompleted && (
                                     <div className="flex flex-wrap gap-2">
                                         <input type="text" placeholder="Selected team's full-word guess" value={wordleGuessInput} onChange={(e) => setWordleGuessInput(e.target.value.replace(/[^a-z]/gi, '').toUpperCase())} onKeyDown={(e) => { if (e.key === 'Enter' && wordleGuessInput.trim()) { store.submitWordleGuess(wordleGuessInput); setWordleGuessInput(''); } }} className="min-w-0 flex-1 bg-white text-slate-950 border border-slate-700 rounded-lg px-3 py-2 uppercase font-mono" />
@@ -509,11 +509,11 @@ export default function AdminVaultPage() {
                             </label>
                             <label className="text-xs">
                                 Wordle Green Letter Points
-                                <input type="number" min="1" value={store.config.wordleNewGreenPoints} onChange={(e) => store.updateConfig({ wordleNewGreenPoints: Math.max(1, Number(e.target.value) || 15) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
+                                <input type="number" min="1" value={store.config.wordleNewGreenPoints} onChange={(e) => store.updateConfig({ wordleNewGreenPoints: Math.max(1, Number(e.target.value) || 25) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
                             </label>
                             <label className="text-xs">
                                 Wordle Yellow Letter Points
-                                <input type="number" min="1" value={store.config.wordleNewYellowPoints} onChange={(e) => store.updateConfig({ wordleNewYellowPoints: Math.max(1, Number(e.target.value) || 8) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
+                                <input type="number" min="1" value={store.config.wordleNewYellowPoints} onChange={(e) => store.updateConfig({ wordleNewYellowPoints: Math.max(1, Number(e.target.value) || 12) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
                             </label>
                             <label className="text-xs">
                                 R2 Buy Cost

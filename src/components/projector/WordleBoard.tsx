@@ -10,6 +10,10 @@ export default function WordleBoard() {
 
     const activeTeam = teams.find((team) => team.id === puzzle.assignedTeamId);
     const maxGuesses = config.wordleMaxGuesses ?? 6;
+    const difficulty = puzzle.difficulty ?? 'medium';
+    const multiplier = difficulty === 'hard' ? 1.5 : difficulty === 'easy' ? 0.75 : 1;
+    const pointsCap = difficulty === 'hard' ? 300 : difficulty === 'easy' ? 150 : 220;
+    const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
 
     const statusStyle = {
         correct: 'bg-[#237747] border-[#155b35] text-white',
@@ -46,15 +50,15 @@ export default function WordleBoard() {
             </section>
 
             <section className="shrink-0 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d8c8a8] bg-[#fff7e8] px-3 py-2 text-xs font-bold text-[#514a40]">
-                <span>TEAM CHALLENGE · {puzzle.difficulty ?? 'medium'} WORDLE</span>
-                <span>New green/yellow letters earn points · {puzzle.difficulty ?? 'medium'} difficulty multiplier</span>
+                <span>TEAM CHALLENGE · {difficulty.toUpperCase()} WORDLE</span>
+                <span>🟩 Green +{Math.round(config.wordleNewGreenPoints * multiplier)} · 🟨 Yellow +{Math.round(config.wordleNewYellowPoints * multiplier)} · Grey +0 · Max {pointsCap} pts</span>
             </section>
 
             <section className="wordle-history flex-1 min-h-0 rounded-2xl border-2 border-[#d8c8a8] bg-[#fffaf0] p-3 md:p-4 flex flex-col shadow-[0_5px_0_rgba(48,59,80,.10)]">
                 <div className="shrink-0 flex items-center justify-between gap-3 border-b border-[#e6dece] pb-2">
                     <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-[#303b50]">Guess history <span className="text-[#a82e22]">· {puzzle.guesses.length}</span></h3>
-                    <div className="flex items-center gap-3 text-[10px] md:text-xs font-bold text-[#514a40]">
-                        <span>🟩 Exact</span><span>🟨 Elsewhere</span><span>⬛ Not in word</span>
+                    <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-[10px] md:text-xs font-bold text-[#514a40]">
+                        <span>🟩 Exact position</span><span>🟨 Correct letter, new spot</span><span>⬛ Not in answer</span><span className="font-black text-[#155b37]">Earned: {totalPuzzlePoints}/{pointsCap} pts</span>
                     </div>
                 </div>
                 {puzzle.guesses.length === 0 ? (
@@ -66,11 +70,13 @@ export default function WordleBoard() {
                     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2 grid content-start gap-2 pr-1">
                         {puzzle.guesses.map((guess, index) => {
                             const team = teams.find((t) => t.id === guess.teamId);
+                            const greenCount = guess.statuses.filter((status) => status === 'correct').length;
+                            const yellowCount = guess.statuses.filter((status) => status === 'present').length;
                             return (
                                 <article key={`${guess.teamId}-${index}`} className="rounded-xl border border-[#e0d5c2] bg-white px-3 py-2 md:px-4 md:py-2.5">
                                     <div className="mb-1.5 flex items-center justify-between gap-3">
                                         <span className="min-w-0 truncate text-xs md:text-sm font-black text-[#303b50]">{index + 1}. {team?.name ?? 'Team'}</span>
-                                        <span className="shrink-0 whitespace-nowrap text-xs md:text-sm font-black text-[#155b37]">+{guess.pointsEarned} pts · letter discoveries</span>
+                                        <span className="shrink-0 whitespace-nowrap rounded-lg bg-[#dcebdd] px-2 py-1 text-xs md:text-sm font-black text-[#155b37]">+{guess.pointsEarned} points</span>
                                     </div>
                                     <div className="flex flex-wrap gap-1 md:gap-1.5">
                                         {guess.word.split('').map((letter, letterIndex) => (

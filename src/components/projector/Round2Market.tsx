@@ -135,7 +135,7 @@ export default function Round2Market({
 
 
                 {/* COLUMN HEADINGS */}
-                <div className="shrink-0 grid grid-cols-[42px_minmax(150px,1.2fr)_minmax(0,3fr)_110px] gap-3 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#766E61]">
+                <div className="shrink-0 grid grid-cols-[34px_minmax(110px,1fr)_minmax(0,3fr)_90px] gap-3 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#766E61]">
                     <span>#</span>
                     <span>Team</span>
                     <span>Word Collection</span>
@@ -163,16 +163,16 @@ export default function Round2Market({
                         return (
                             <div
                                 key={team.id}
-                                className={`min-h-0 grid grid-cols-[42px_minmax(150px,1.2fr)_minmax(0,3fr)_110px] gap-3 items-center px-4 rounded-xl border-2 transition-colors ${isTurn
-                                        ? 'bg-[#FFD447] border-[#24211D]'
-                                        : 'bg-[#FFF9EC] border-[#E6DECF]'
+                                className={`min-h-0 grid grid-cols-[34px_minmax(110px,1fr)_minmax(0,3fr)_90px] gap-3 items-center px-4 rounded-xl border-2 transition-colors ${isTurn
+                                    ? 'bg-[#FFD447] border-[#24211D]'
+                                    : 'bg-[#FFF9EC] border-[#E6DECF]'
                                     }`}
                             >
 
                                 {/* TEAM NUMBER */}
                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black ${isTurn
-                                        ? 'bg-[#24211D] text-[#FFD447]'
-                                        : 'bg-[#E9E2D4] text-[#24211D]'
+                                    ? 'bg-[#24211D] text-[#FFD447]'
+                                    : 'bg-[#E9E2D4] text-[#24211D]'
                                     }`}>
                                     {idx + 1}
                                 </div>
@@ -193,28 +193,39 @@ export default function Round2Market({
 
 
                                 {/* FOUR WORD SLOTS */}
-                                <div className="grid grid-cols-4 gap-2 min-w-0">
+                                <div className="grid grid-cols-4 gap-1.5 min-w-0">
 
-                                    {words.map((word, slotIdx) => (
-                                        <div
-                                            key={slotIdx}
-                                            title={word || 'Empty Slot'}
-                                            className={`min-w-0 h-10 px-2 rounded-lg border flex items-center justify-center gap-1 ${word
-                                                    ? slotIdx === 0
-                                                        ? 'bg-[#DCE5F2] border-[#496B9A] text-[#243B5A]'
-                                                        : 'bg-[#DCEBDD] border-[#35A86B] text-[#174B2B]'
-                                                    : 'bg-[#F2EFE8] border-dashed border-[#B6AD9E] text-[#625D55]'
-                                                }`}
-                                        >
-                                            {slotIdx === 0 && word && (
-                                                <Lock className="w-3 h-3 shrink-0" />
-                                            )}
 
-                                            <span className="text-sm font-black truncate">
-                                                {word || '—'}{isFinale && word && (team.visitedWords ?? []).includes(word) ? ' ✓' : ''}
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {words.map((word, slotIdx) => {
+                                        const isVisited =
+                                            isFinale &&
+                                            !!word &&
+                                            (team.visitedWords ?? []).includes(word);
+
+                                        return (
+                                            <div
+                                                key={slotIdx}
+                                                title={word || 'Empty Slot'}
+                                                className={`min-w-0 h-10 px-2 rounded-lg border flex items-center justify-center gap-1 transition-colors ${isVisited
+                                                        ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
+                                                        : word
+                                                            ? slotIdx === 0
+                                                                ? 'bg-[#DCE5F2] border-[#496B9A] text-[#243B5A]'
+                                                                : 'bg-[#DCEBDD] border-[#35A86B] text-[#174B2B]'
+                                                            : 'bg-[#F2EFE8] border-dashed border-[#B6AD9E] text-[#625D55]'
+                                                    }`}
+                                            >
+                                                {slotIdx === 0 && word && (
+                                                    <Lock className="w-3 h-3 shrink-0" />
+                                                )}
+
+                                                <span className="text-sm font-black truncate">
+                                                    {word || '—'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+
 
                                 </div>
 

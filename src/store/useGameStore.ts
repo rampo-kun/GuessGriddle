@@ -19,8 +19,8 @@ const CHANNEL_NAME = 'guessgriddle_sync_channel';
 const DEFAULT_CONFIG: GameConfig = {
     wordleMaxGuesses: 6,
     roundTimerSeconds: 45,
-    wordleNewGreenPoints: 15,
-    wordleNewYellowPoints: 8,
+    wordleNewGreenPoints: 25,
+    wordleNewYellowPoints: 12,
     r2BuyCost: 100,
     r2AssignCost: 200,
     r2StealCost: 300,
@@ -87,6 +87,21 @@ const SAMPLE_WORDLES: WordlePuzzle[] = [
     { id: 'w16', number: 16, targetWord: 'BAYESIAN', definition: 'Relating to probability updated using prior knowledge and evidence.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
     { id: 'w17', number: 17, targetWord: 'KERNEL', definition: 'The central component of an operating system.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
     { id: 'w18', number: 18, targetWord: 'HEURISTIC', definition: 'A practical method used to find an approximate solution.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w19', number: 19, targetWord: 'MERGE', definition: 'To combine two datasets, branches, or groups into one.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w20', number: 20, targetWord: 'BRAND', definition: 'A name, symbol, or identity that distinguishes a product or company.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w21', number: 21, targetWord: 'SCALE', definition: 'The ability of a system or business to handle growth.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w22', number: 22, targetWord: 'SALES', definition: 'The exchange of goods or services for money.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w23', number: 23, targetWord: 'RATIO', definition: 'A comparison of two quantities by division.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w24', number: 24, targetWord: 'MARKET', definition: 'A place or system where buyers and sellers exchange goods or services.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w25', number: 25, targetWord: 'PROFIT', definition: 'The amount remaining when costs are subtracted from revenue.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w26', number: 26, targetWord: 'INSIGHT', definition: 'A useful understanding discovered by analysing information.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w27', number: 27, targetWord: 'NETWORK', definition: 'A group of connected computers, people, or organisations.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w28', number: 28, targetWord: 'MARGIN', definition: 'The difference between revenue and a related cost, often expressed as a percentage.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w29', number: 29, targetWord: 'DEMAND', definition: 'The quantity of a product consumers are willing and able to buy.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w30', number: 30, targetWord: 'CAPITAL', definition: 'Wealth or resources used to start or operate a business.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w31', number: 31, targetWord: 'STRATEGY', definition: 'A long-term plan designed to achieve a particular objective.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w32', number: 32, targetWord: 'REVENUE', definition: 'The total income generated from normal business activities.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w33', number: 33, targetWord: 'SUPPLY', definition: 'The amount of a product or service available to the market.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
 ];
 
 interface GameActions {
@@ -237,9 +252,21 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                             JSON.stringify(parsed.config.auctionWordPool) === JSON.stringify(SHIPPED_DEFAULT_AUCTION_WORD_POOL))) {
                         parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
                     }
-                    if (parsed.config) parsed.config = { ...DEFAULT_CONFIG, ...parsed.config };
+                    if (parsed.config) {
+                        if (parsed.config.wordleNewGreenPoints === 15 && parsed.config.wordleNewYellowPoints === 8) {
+                            parsed.config.wordleNewGreenPoints = DEFAULT_CONFIG.wordleNewGreenPoints;
+                            parsed.config.wordleNewYellowPoints = DEFAULT_CONFIG.wordleNewYellowPoints;
+                        }
+                        parsed.config = { ...DEFAULT_CONFIG, ...parsed.config };
+                    }
                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
+                    // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
+                    if (Array.isArray(parsed.wordles) && parsed.wordles.length === 18 &&
+                        parsed.wordles.every((puzzle: WordlePuzzle, index: number) => puzzle.targetWord === SAMPLE_WORDLES[index]?.targetWord)) {
+                        const existingIds = new Set(parsed.wordles.map((puzzle: WordlePuzzle) => puzzle.id));
+                        parsed.wordles = [...parsed.wordles, ...SAMPLE_WORDLES.filter((puzzle) => !existingIds.has(puzzle.id))];
+                    }
                     if (Array.isArray(parsed.wordles) &&
                         parsed.wordles.length === SHIPPED_DEFAULT_WORDLE_WORDS.length &&
                         parsed.wordles.every((puzzle: WordlePuzzle) => (puzzle.guesses ?? []).length === 0) &&
@@ -456,7 +483,7 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                 );
                 if (!result.valid || normalizedWord.length !== puzzle.targetWord.length) return {};
 
-                const pointsCap = puzzle.difficulty === 'hard' ? 180 : puzzle.difficulty === 'medium' ? 130 : 90;
+                const pointsCap = puzzle.difficulty === 'hard' ? 300 : puzzle.difficulty === 'medium' ? 220 : 150;
                 const pointsAlreadyEarned = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
                 const pointsEarned = Math.min(result.pointsEarned, Math.max(0, pointsCap - pointsAlreadyEarned));
                 const pointsByLetter = result.pointsByLetter.map((points) => points);

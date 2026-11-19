@@ -6,9 +6,9 @@ import { Check, Lock } from 'lucide-react';
 export default function WordleSelector() {
     const { wordles } = useGameStore();
     const tiers = [
-        { key: 'easy', label: 'Easy', points: 'Up to 90 pts', color: 'border-emerald-500 text-emerald-900' },
-        { key: 'medium', label: 'Medium', points: 'Up to 130 pts', color: 'border-amber-500 text-amber-900' },
-        { key: 'hard', label: 'Hard', points: 'Up to 180 pts', color: 'border-rose-500 text-rose-900' },
+        { key: 'easy', label: 'Easy', points: 'Up to 150 pts', color: 'border-emerald-500 text-emerald-900' },
+        { key: 'medium', label: 'Medium', points: 'Up to 220 pts', color: 'border-amber-500 text-amber-900' },
+        { key: 'hard', label: 'Hard', points: 'Up to 300 pts', color: 'border-rose-500 text-rose-900' },
     ] as const;
 
     return (
