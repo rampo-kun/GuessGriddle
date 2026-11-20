@@ -1,0 +1,210 @@
+diff --git a/src/components/projector/Round2Market.tsx b/src/components/projector/Round2Market.tsx
+index 625e4e4..f79afa9 100644
+--- a/src/components/projector/Round2Market.tsx
++++ b/src/components/projector/Round2Market.tsx
+@@ -10,15 +10,15 @@ import ProjectorStage from './ProjectorStage';
+  * hold on any projector. More teams -> more columns and tighter cards.
+  */
+ function getDensity(teamCount: number) {
+-    const columns = teamCount <= 5 ? 1 : teamCount <= 12 ? 2 : teamCount <= 18 ? 3 : 4;
++    const columns = teamCount <= 4 ? 1 : teamCount <= 8 ? 2 : teamCount <= 15 ? 3 : 4;
+     const rows = Math.max(1, Math.ceil(teamCount / columns));
+     // Word slots sit in one row when the card is wide, as a 2x2 block when narrow.
+     const wideCards = columns <= 2;
+-    const tier = teamCount <= 8 ? 'roomy' : teamCount <= 10 ? 'normal' : 'compact';
++    const tier = teamCount <= 4 ? 'roomy' : teamCount <= 8 ? 'normal' : 'compact';
+     const t = {
+         roomy: { name: 'text-2xl', score: 'text-3xl', rank: 'w-10 h-10 text-lg', word: 'text-lg', slot: 'min-h-[3.25rem]', pad: 'p-3', gap: 'gap-2' },
+         normal: { name: 'text-xl', score: 'text-2xl', rank: 'w-9 h-9 text-base', word: 'text-base', slot: 'min-h-[2.75rem]', pad: 'p-2.5', gap: 'gap-1.5' },
+-        compact: { name: 'text-base', score: 'text-xl', rank: 'w-6 h-6 text-xs', word: 'text-xs', slot: 'min-h-[1.9rem]', pad: 'p-1.5', gap: 'gap-1' },
++        compact: { name: 'text-base', score: 'text-xl', rank: 'w-6 h-6 text-xs', word: 'text-xs', slot: 'min-h-[1.65rem]', pad: 'p-1.5', gap: 'gap-1' },
+     }[tier];
+     return { columns, rows, wideCards, ...t };
+ }
+@@ -94,10 +94,10 @@ export default function Round2Market({ isFinale = false }: { isFinale?: boolean
+ 
+                 {/* Rows are capped so a handful of teams doesn't stretch into huge cards. */}
+                 <div
+-                    className="flex-1 min-h-0 grid gap-2 pt-3 content-center"
++                    className="flex-1 min-h-0 grid gap-2 pt-3 content-stretch"
+                     style={{
+                         gridTemplateColumns: `repeat(${d.columns}, minmax(0, 1fr))`,
+-                        gridTemplateRows: `repeat(${d.rows}, minmax(0, 150px))`,
++                        gridTemplateRows: `repeat(${d.rows}, minmax(0, 1fr))`,
+                     }}
+                 >
+                     {teams.map((team, idx) => {
+@@ -135,7 +135,7 @@ export default function Round2Market({ isFinale = false }: { isFinale?: boolean
+                                             <div
+                                                 key={slotIdx}
+                                                 title={word || 'Empty Slot'}
+-                                                className={`min-w-0 ${d.slot} px-2 py-1 rounded-md border flex items-center justify-center gap-1 text-center transition-colors ${isVisited
++                                                className={`min-w-0 ${d.slot} min-h-0 px-1.5 py-1 rounded-md border flex items-center justify-center gap-1 text-center transition-colors ${isVisited
+                                                     ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
+                                                     : word
+                                                         ? slotIdx === 0
+diff --git a/src/components/projector/WikiWinnerView.tsx b/src/components/projector/WikiWinnerView.tsx
+index 6791eeb..ef7ad78 100644
+--- a/src/components/projector/WikiWinnerView.tsx
++++ b/src/components/projector/WikiWinnerView.tsx
+@@ -6,13 +6,13 @@ import { useGameStore } from '@/store/useGameStore';
+ export default function WikiWinnerView() {
+     const { teams, winnerTeamId } = useGameStore();
+     const winner = teams.find((team) => team.id === winnerTeamId);
+-    return <main className="flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-[#17130f] px-8 text-center text-white">
++    return <main className="flex min-h-screen w-screen flex-col items-center justify-center overflow-hidden bg-[#17130f] px-5 py-8 text-center text-white">
+         <Sparkles className="mb-5 h-14 w-14 text-[#FFD447]" />
+         <p className="text-xl font-black uppercase tracking-[.35em] text-[#FFD447]">X-Insights · GuessGriddle</p>
+-        <h1 className="mt-5 text-5xl font-black uppercase tracking-tight md:text-7xl">And the winner is...</h1>
++        <h1 className="mt-5 text-4xl font-black uppercase tracking-tight sm:text-5xl md:text-7xl">And the winner is...</h1>
+         {winner ? <>
+             <Trophy className="mt-10 h-28 w-28 text-[#FFD447]" />
+-            <div className="mt-5 rounded-3xl border-4 border-[#FFD447] bg-[#FFF3D6] px-12 py-8 text-5xl font-black text-[#24211D] shadow-2xl md:text-7xl">{winner.name}</div>
++            <div className="mt-5 w-full max-w-6xl break-words rounded-3xl border-4 border-[#FFD447] bg-[#FFF3D6] px-5 py-7 text-4xl font-black leading-tight text-[#24211D] shadow-2xl sm:px-10 sm:text-5xl md:px-12 md:py-8 md:text-7xl">{winner.name}</div>
+         </> : <p className="mt-8 text-2xl text-amber-200">Winner not selected</p>}
+     </main>;
+ }
+diff --git a/src/data/jeopardyQuestions.ts b/src/data/jeopardyQuestions.ts
+index 6df8af0..67b1d31 100644
+--- a/src/data/jeopardyQuestions.ts
++++ b/src/data/jeopardyQuestions.ts
+@@ -27,4 +27,10 @@ export const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
+     { id: "j23", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 300, question: "How much revenue would a busy Bengaluru supermarket generate on a Sunday?", actualAnswer: 5.5, minLimit: 3.0, maxLimit: 8.0, unit: "₹ lakh", isCompleted: false },
+     { id: "j24", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 400, question: "How many delivery riders would Swiggy and Zomato collectively need to fulfil 10,000 food orders in Bengaluru during peak dinner hours?", actualAnswer: 1500.0, minLimit: 1000.0, maxLimit: 2000.0, unit: "riders", isCompleted: false },
+     { id: "j25", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 500, question: "If a shopping mall has 100 stores and each store generates an average daily sale of ₹50,000, what would be the mall's collective annual sales?", actualAnswer: 175.0, minLimit: 150.0, maxLimit: 200.0, unit: "₹ crore", isCompleted: false },
++
++    { id: "j26", category: "CAMPUS & B-SCHOOL LIFE", points: 100, question: "How many cups of coffee would 300 students drink in total if each student had 2 cups a day for 5 days?", actualAnswer: 3000, minLimit: 2400, maxLimit: 3600, unit: "cups", isCompleted: false },
++    { id: "j27", category: "POP CULTURE, FOOD & EVERYDAY INDIA", points: 200, question: "How many slices of pizza are needed for 250 people if each person eats an average of 2 slices?", actualAnswer: 500, minLimit: 400, maxLimit: 600, unit: "slices", isCompleted: false },
++    { id: "j28", category: "BIG TECH & DIGITAL SCALE", points: 300, question: "If 500 students each watch 15 short videos of 30 seconds, how many total hours of video are watched?", actualAnswer: 62.5, minLimit: 50, maxLimit: 75, unit: "hours", isCompleted: false },
++    { id: "j29", category: "DATA, AI & CLOUD ECONOMICS", points: 400, question: "A dataset has 80,000 rows and each row averages 2 KB. Approximately how large is the dataset?", actualAnswer: 160, minLimit: 120, maxLimit: 200, unit: "MB", isCompleted: false },
++    { id: "j30", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 500, question: "An online store gets 12,000 visitors in a day and 3% place an order. How many orders does it receive?", actualAnswer: 360, minLimit: 300, maxLimit: 420, unit: "orders", isCompleted: false },
+ ];
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index cca14ac..f540993 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -27,31 +27,42 @@ const DEFAULT_CONFIG: GameConfig = {
+     r2StealCost: 300,
+     r2StealRefundPercent: 50,
+     // Wiki Race words are recognizable Wikipedia pages with multiple possible cross-links.
++    // Twenty-five accessible tech/analytics Wikipedia starting pages: enough for 19 teams without repeats.
+     startingWordPool: [
+-        'ALGORITHM', 'STATISTICS', 'DATABASE', 'MACHINE LEARNING', 'DATA VISUALIZATION',
+-        'REGRESSION', 'PROBABILITY', 'ECONOMICS', 'COMPUTER NETWORK', 'ARTIFICIAL INTELLIGENCE',
+-        'BUSINESS INTELLIGENCE', 'CYBERSECURITY', 'CLIMATE CHANGE', 'SOLAR SYSTEM',
+-        'PHOTOGRAPHY', 'DEMOCRACY', 'EVOLUTION', 'CRICKET', 'GLOBALIZATION', 'RENEWABLE ENERGY',
+-        'NEUROSCIENCE', 'PSYCHOLOGY', 'INTERNET', 'OCEAN', 'SPACE EXPLORATION',
++        'INTERNET', 'COMPUTER', 'GOOGLE', 'SMARTPHONE', 'ARTIFICIAL INTELLIGENCE',
++        'DATA SCIENCE', 'STATISTICS', 'DATABASE', 'ALGORITHM', 'SOFTWARE',
++        'WORLD WIDE WEB', 'SEARCH ENGINE', 'SOCIAL MEDIA', 'ROBOT', 'CYBERSECURITY',
++        'MACHINE LEARNING', 'CLOUD COMPUTING', 'PROGRAMMING', 'ELECTRONIC COMMERCE',
++        'VIDEO GAME', 'MICROSOFT', 'APPLE INC.', 'WIKIPEDIA', 'TELECOMMUNICATION', 'SPREADSHEET',
+     ],
++    // Broad, familiar destination pages with many likely cross-links for a 20-minute race.
+     auctionWordPool: [
+-        'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA', 'VIDEO GAME', 'ROBOT',
+-        'COMPUTER', 'COFFEE', 'PIZZA', 'SOLAR ENERGY', 'ELECTRIC CAR', 'JAPAN',
+-        'UNITED STATES', 'MOUNT EVEREST', 'TAJ MAHAL', 'LEONARDO DA VINCI',
+-        'ALBERT EINSTEIN', 'WILLIAM SHAKESPEARE', 'MARIE CURIE', 'NELSON MANDELA',
+-        'BARACK OBAMA', 'CRICKET WORLD CUP', 'OLYMPIC GAMES', 'FOOTBALL',
+-        'TENNIS', 'CHESS', 'FORMULA ONE', 'BOLLYWOOD', 'HOLLYWOOD', 'WALT DISNEY',
+-        'STAR WARS', 'HARRY POTTER', 'THE BEATLES', 'MICHAEL JACKSON', 'TAYLOR SWIFT',
+-        'MARIO', 'POKEMON', 'MINECRAFT', 'YOUTUBE', 'NETFLIX', 'INSTAGRAM',
+-        'WIKIPEDIA', 'ARTIFICIAL INTELLIGENCE', 'BLOCKCHAIN', 'QUANTUM COMPUTING',
+-        'ELECTRICITY', 'GRAVITY', 'BLACK HOLE', 'DNA', 'VACCINE', 'VOLCANO',
+-        'EARTHQUAKE', 'AMAZON RAINFOREST', 'GREAT BARRIER REEF', 'SAHARA',
+-        'NILE', 'GANGES', 'HIMALAYAS', 'PARIS', 'TOKYO', 'NEW YORK CITY',
+-        'SINGAPORE', 'DUBAI', 'ITALY', 'BRAZIL', 'EGYPT', 'AUSTRALIA',
+-        'CHOCOLATE', 'SUSHI', 'MASALA DOSA', 'COCA-COLA',
+-        'TITANIC', 'APOLLO 11', 'INTERNATIONAL SPACE STATION', 'MOBILE PHONE',
+-        'WORLD WIDE WEB', 'UNITED NATIONS', 'RED CROSS', 'NOBEL PRIZE',
+-        'FIFA', 'NBA', 'TOYOTA', 'TESLA', 'NIKE', 'ADIDAS',
++        'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA', 'VIDEO GAME', 'ROBOT', 'COMPUTER',
++        'COFFEE', 'PIZZA', 'SOLAR ENERGY', 'ELECTRIC CAR', 'JAPAN', 'UNITED STATES',
++        'MOUNT EVEREST', 'TAJ MAHAL', 'LEONARDO DA VINCI', 'ALBERT EINSTEIN', 'MARIE CURIE',
++        'NELSON MANDELA', 'CRICKET', 'OLYMPIC GAMES', 'FOOTBALL', 'TENNIS', 'CHESS',
++        'FORMULA ONE', 'BOLLYWOOD', 'HOLLYWOOD', 'WALT DISNEY', 'STAR WARS', 'HARRY POTTER',
++        'THE BEATLES', 'MICHAEL JACKSON', 'TAYLOR SWIFT', 'MARIO', 'POKEMON', 'MINECRAFT',
++        'YOUTUBE', 'NETFLIX', 'INSTAGRAM', 'WIKIPEDIA', 'ARTIFICIAL INTELLIGENCE',
++        'BLOCKCHAIN', 'QUANTUM COMPUTING', 'ELECTRICITY', 'GRAVITY', 'BLACK HOLE', 'DNA',
++        'VACCINE', 'VOLCANO', 'EARTHQUAKE', 'AMAZON RAINFOREST', 'GREAT BARRIER REEF',
++        'SAHARA', 'NILE', 'GANGES', 'HIMALAYAS', 'PARIS', 'TOKYO', 'NEW YORK CITY',
++        'SINGAPORE', 'DUBAI', 'ITALY', 'BRAZIL', 'EGYPT', 'AUSTRALIA', 'CHOCOLATE',
++        'SUSHI', 'MASALA DOSA', 'COCA-COLA', 'TITANIC', 'APOLLO 11',
++        'INTERNATIONAL SPACE STATION', 'MOBILE PHONE', 'WORLD WIDE WEB', 'UNITED NATIONS',
++        'RED CROSS', 'NOBEL PRIZE', 'FIFA', 'NBA', 'TOYOTA', 'TESLA', 'NIKE', 'ADIDAS',
++        'BARBIE', 'LEGO', 'NINTENDO', 'DISNEYLAND', 'SPONGEBOB SQUAREPANTS', 'BATMAN',
++        'SUPERMAN', 'SPIDER-MAN', 'SHREK', 'FROZEN', 'THE LION KING', 'JURASSIC PARK',
++        'AVATAR', 'MISSION IMPOSSIBLE', 'JAMES BOND', 'GUITAR', 'PIANO', 'DRUM', 'KARAOKE',
++        'COCONUT', 'MANGO', 'BANANA', 'BURGER', 'SANDWICH', 'ICE CREAM', 'CHOCOLATE CAKE',
++        'BIRYANI', 'DOSA', 'SAMOSA', 'POPCORN', 'TEA', 'COCA-COLA', "MCDONALD'S",
++        'STARBUCKS', 'AIRPLANE', 'RAILWAY', 'METRO', 'BICYCLE', 'MOTORCYCLE', 'TRAFFIC LIGHT',
++        'BRIDGE', 'SKYSCRAPER', 'PYRAMID', 'EIFFEL TOWER', 'STATUE OF LIBERTY',
++        'GOLDEN GATE BRIDGE', 'GREAT WALL OF CHINA', 'MACHU PICCHU', 'NIAGARA FALLS',
++        'ANTARCTICA', 'MOON', 'MARS', 'JUPITER', 'SATURN', 'RAINBOW', 'LIGHTNING',
++        'OCEAN', 'DESERT', 'FOREST', 'PANDA', 'DOLPHIN', 'PENGUIN', 'ELEPHANT', 'TIGER',
++        'OCTOPUS', 'BUTTERFLY', 'DINOSAUR', 'GIRAFFE', 'KOALA', 'CAMEL', 'PEACOCK',
++        'PHOTOGRAPHY', 'CINEMA', 'ANIMATION', 'COMIC BOOK', 'BOARD GAME', "RUBIK'S CUBE",
+     ],
+ };
+ 
+@@ -130,6 +141,21 @@ const SAMPLE_WORDLES: WordlePuzzle[] = [
+     { id: 'w31', number: 31, targetWord: 'STRATEGY', definition: 'A long-term plan designed to achieve a particular objective.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+     { id: 'w32', number: 32, targetWord: 'REVENUE', definition: 'The total income generated from normal business activities.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+     { id: 'w33', number: 33, targetWord: 'SUPPLY', definition: 'The amount of a product or service available to the market.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w34', number: 34, targetWord: 'MODEL', definition: 'A simplified representation used to explain or predict something.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w35', number: 35, targetWord: 'INPUT', definition: 'Data or information supplied to a system.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w36', number: 36, targetWord: 'OUTPUT', definition: 'The result produced by a process or system.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w37', number: 37, targetWord: 'TABLE', definition: 'Data arranged in rows and columns.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w38', number: 38, targetWord: 'EMAIL', definition: 'A message sent electronically over a network.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w39', number: 39, targetWord: 'LOGIN', definition: 'The process of accessing an account.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w40', number: 40, targetWord: 'TOKEN', definition: 'A unit of text processed by a language model.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w41', number: 41, targetWord: 'LOGIC', definition: 'Rules used to reason or reach a conclusion.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w42', number: 42, targetWord: 'TREND', definition: 'A general direction in which something changes.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w43', number: 43, targetWord: 'PIVOT', definition: 'To reorganise data around selected fields in a table.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w44', number: 44, targetWord: 'PYTHON', definition: 'A widely used programming language named after a comedy group.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w45', number: 45, targetWord: 'FORECAST', definition: 'A prediction of a future value or event.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w46', number: 46, targetWord: 'DASHBOARD', definition: 'A screen that brings important metrics together.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w47', number: 47, targetWord: 'SEGMENT', definition: 'A distinct group within a larger dataset or market.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
++    { id: 'w48', number: 48, targetWord: 'SERVER', definition: 'A computer or program that provides services to other devices.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+ ];
+ 
+ interface GameActions {
+@@ -305,6 +331,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                         parsed.wordleCountCompleted = 0;
+                     }
+                     // Upgrade only the previous built-in Wiki Race bank; preserve any custom bank.
++                    // Upgrade the previous shipped default pools, but leave user-edited pools untouched.
++                    if (parsed.config?.startingWordPool?.length === 25 && parsed.config.startingWordPool.includes('CLIMATE CHANGE') && parsed.config.startingWordPool.includes('SPACE EXPLORATION')) {
++                        parsed.config = { ...parsed.config, startingWordPool: DEFAULT_CONFIG.startingWordPool };
++                    }
++                    if (parsed.config?.auctionWordPool?.length < 100 && parsed.config?.auctionWordPool?.includes('HARRY POTTER') && parsed.config?.auctionWordPool?.includes('QUANTUM COMPUTING')) {
++                        parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
++                    }
+                     if (parsed.config && Array.isArray(parsed.config.startingWordPool) &&
+                         (JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL) ||
+                             JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(PREVIOUS_DEFAULT_STARTING_WORD_POOL) ||
+@@ -331,8 +364,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                     parsed.round1ModeByTeam = parsed.round1ModeByTeam ?? {};
+                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
+                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
+-                    // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
+-                    if (Array.isArray(parsed.wordles) && parsed.wordles.length === 18 &&
++                    // Extend any untouched built-in Wordle bank while preserving played puzzles and custom additions.
++                    if (Array.isArray(parsed.wordles) && parsed.wordles.length < SAMPLE_WORDLES.length &&
+                         parsed.wordles.every((puzzle: WordlePuzzle, index: number) => puzzle.targetWord === SAMPLE_WORDLES[index]?.targetWord)) {
+                         const existingIds = new Set(parsed.wordles.map((puzzle: WordlePuzzle) => puzzle.id));
+                         parsed.wordles = [...parsed.wordles, ...SAMPLE_WORDLES.filter((puzzle) => !existingIds.has(puzzle.id))];
+@@ -351,6 +384,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                             difficulty: puzzle.difficulty ?? 'medium',
+                         }));
+                     }
++                    // Add the five new built-in guesstimates to an untouched original 25-question board.
++                    if (Array.isArray(parsed.jeopardyBoard) && parsed.jeopardyBoard.length === 25 &&
++                        parsed.jeopardyBoard.every((question: JeopardyQuestion, index: number) => question.id === `j${index + 1}`)) {
++                        const existingIds = new Set(parsed.jeopardyBoard.map((question: JeopardyQuestion) => question.id));
++                        parsed.jeopardyBoard = [...parsed.jeopardyBoard, ...SAMPLE_JEOPARDY.filter((question) => !existingIds.has(question.id))];
++                    }
+                     // Replace the previous shipped Jeopardy questionnaire while preserving custom boards.
+                     if (Array.isArray(parsed.jeopardyBoard) &&
+                         parsed.jeopardyBoard.some((question: JeopardyQuestion) => question.isImageQuestion || question.id.startsWith('image-') || (question.id === 'j1' && question.category === 'SPORTS'))) {

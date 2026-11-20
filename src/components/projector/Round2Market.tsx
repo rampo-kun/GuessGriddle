@@ -10,15 +10,15 @@ import ProjectorStage from './ProjectorStage';
  * hold on any projector. More teams -> more columns and tighter cards.
  */
 function getDensity(teamCount: number) {
-    const columns = teamCount <= 5 ? 1 : teamCount <= 12 ? 2 : teamCount <= 18 ? 3 : 4;
+    const columns = teamCount <= 4 ? 1 : teamCount <= 8 ? 2 : teamCount <= 15 ? 3 : 4;
     const rows = Math.max(1, Math.ceil(teamCount / columns));
     // Word slots sit in one row when the card is wide, as a 2x2 block when narrow.
     const wideCards = columns <= 2;
-    const tier = teamCount <= 8 ? 'roomy' : teamCount <= 10 ? 'normal' : 'compact';
+    const tier = teamCount <= 4 ? 'roomy' : teamCount <= 8 ? 'normal' : 'compact';
     const t = {
         roomy: { name: 'text-2xl', score: 'text-3xl', rank: 'w-10 h-10 text-lg', word: 'text-lg', slot: 'min-h-[3.25rem]', pad: 'p-3', gap: 'gap-2' },
         normal: { name: 'text-xl', score: 'text-2xl', rank: 'w-9 h-9 text-base', word: 'text-base', slot: 'min-h-[2.75rem]', pad: 'p-2.5', gap: 'gap-1.5' },
-        compact: { name: 'text-base', score: 'text-xl', rank: 'w-6 h-6 text-xs', word: 'text-xs', slot: 'min-h-[1.9rem]', pad: 'p-1.5', gap: 'gap-1' },
+        compact: { name: 'text-base', score: 'text-xl', rank: 'w-6 h-6 text-xs', word: 'text-xs', slot: 'min-h-[1.65rem]', pad: 'p-1.5', gap: 'gap-1' },
     }[tier];
     return { columns, rows, wideCards, ...t };
 }
@@ -94,10 +94,10 @@ export default function Round2Market({ isFinale = false }: { isFinale?: boolean 
 
                 {/* Rows are capped so a handful of teams doesn't stretch into huge cards. */}
                 <div
-                    className="flex-1 min-h-0 grid gap-2 pt-3 content-center"
+                    className="flex-1 min-h-0 grid gap-2 pt-3 content-stretch"
                     style={{
                         gridTemplateColumns: `repeat(${d.columns}, minmax(0, 1fr))`,
-                        gridTemplateRows: `repeat(${d.rows}, minmax(0, 150px))`,
+                        gridTemplateRows: `repeat(${d.rows}, minmax(0, 1fr))`,
                     }}
                 >
                     {teams.map((team, idx) => {
@@ -135,7 +135,7 @@ export default function Round2Market({ isFinale = false }: { isFinale?: boolean 
                                             <div
                                                 key={slotIdx}
                                                 title={word || 'Empty Slot'}
-                                                className={`min-w-0 ${d.slot} px-2 py-1 rounded-md border flex items-center justify-center gap-1 text-center transition-colors ${isVisited
+                                                className={`min-w-0 ${d.slot} min-h-0 px-1.5 py-1 rounded-md border flex items-center justify-center gap-1 text-center transition-colors ${isVisited
                                                     ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
                                                     : word
                                                         ? slotIdx === 0

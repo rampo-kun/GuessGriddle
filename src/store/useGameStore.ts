@@ -27,31 +27,42 @@ const DEFAULT_CONFIG: GameConfig = {
     r2StealCost: 300,
     r2StealRefundPercent: 50,
     // Wiki Race words are recognizable Wikipedia pages with multiple possible cross-links.
+    // Twenty-five accessible tech/analytics Wikipedia starting pages: enough for 19 teams without repeats.
     startingWordPool: [
-        'ALGORITHM', 'STATISTICS', 'DATABASE', 'MACHINE LEARNING', 'DATA VISUALIZATION',
-        'REGRESSION', 'PROBABILITY', 'ECONOMICS', 'COMPUTER NETWORK', 'ARTIFICIAL INTELLIGENCE',
-        'BUSINESS INTELLIGENCE', 'CYBERSECURITY', 'CLIMATE CHANGE', 'SOLAR SYSTEM',
-        'PHOTOGRAPHY', 'DEMOCRACY', 'EVOLUTION', 'CRICKET', 'GLOBALIZATION', 'RENEWABLE ENERGY',
-        'NEUROSCIENCE', 'PSYCHOLOGY', 'INTERNET', 'OCEAN', 'SPACE EXPLORATION',
+        'INTERNET', 'COMPUTER', 'GOOGLE', 'SMARTPHONE', 'ARTIFICIAL INTELLIGENCE',
+        'DATA SCIENCE', 'STATISTICS', 'DATABASE', 'ALGORITHM', 'SOFTWARE',
+        'WORLD WIDE WEB', 'SEARCH ENGINE', 'SOCIAL MEDIA', 'ROBOT', 'CYBERSECURITY',
+        'MACHINE LEARNING', 'CLOUD COMPUTING', 'PROGRAMMING', 'ELECTRONIC COMMERCE',
+        'VIDEO GAME', 'MICROSOFT', 'APPLE INC.', 'WIKIPEDIA', 'TELECOMMUNICATION', 'SPREADSHEET',
     ],
+    // Broad, familiar destination pages with many likely cross-links for a 20-minute race.
     auctionWordPool: [
-        'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA', 'VIDEO GAME', 'ROBOT',
-        'COMPUTER', 'COFFEE', 'PIZZA', 'SOLAR ENERGY', 'ELECTRIC CAR', 'JAPAN',
-        'UNITED STATES', 'MOUNT EVEREST', 'TAJ MAHAL', 'LEONARDO DA VINCI',
-        'ALBERT EINSTEIN', 'WILLIAM SHAKESPEARE', 'MARIE CURIE', 'NELSON MANDELA',
-        'BARACK OBAMA', 'CRICKET WORLD CUP', 'OLYMPIC GAMES', 'FOOTBALL',
-        'TENNIS', 'CHESS', 'FORMULA ONE', 'BOLLYWOOD', 'HOLLYWOOD', 'WALT DISNEY',
-        'STAR WARS', 'HARRY POTTER', 'THE BEATLES', 'MICHAEL JACKSON', 'TAYLOR SWIFT',
-        'MARIO', 'POKEMON', 'MINECRAFT', 'YOUTUBE', 'NETFLIX', 'INSTAGRAM',
-        'WIKIPEDIA', 'ARTIFICIAL INTELLIGENCE', 'BLOCKCHAIN', 'QUANTUM COMPUTING',
-        'ELECTRICITY', 'GRAVITY', 'BLACK HOLE', 'DNA', 'VACCINE', 'VOLCANO',
-        'EARTHQUAKE', 'AMAZON RAINFOREST', 'GREAT BARRIER REEF', 'SAHARA',
-        'NILE', 'GANGES', 'HIMALAYAS', 'PARIS', 'TOKYO', 'NEW YORK CITY',
-        'SINGAPORE', 'DUBAI', 'ITALY', 'BRAZIL', 'EGYPT', 'AUSTRALIA',
-        'CHOCOLATE', 'SUSHI', 'MASALA DOSA', 'COCA-COLA',
-        'TITANIC', 'APOLLO 11', 'INTERNATIONAL SPACE STATION', 'MOBILE PHONE',
-        'WORLD WIDE WEB', 'UNITED NATIONS', 'RED CROSS', 'NOBEL PRIZE',
-        'FIFA', 'NBA', 'TOYOTA', 'TESLA', 'NIKE', 'ADIDAS',
+        'GOOGLE', 'AMAZON', 'SMARTPHONE', 'SOCIAL MEDIA', 'VIDEO GAME', 'ROBOT', 'COMPUTER',
+        'COFFEE', 'PIZZA', 'SOLAR ENERGY', 'ELECTRIC CAR', 'JAPAN', 'UNITED STATES',
+        'MOUNT EVEREST', 'TAJ MAHAL', 'LEONARDO DA VINCI', 'ALBERT EINSTEIN', 'MARIE CURIE',
+        'NELSON MANDELA', 'CRICKET', 'OLYMPIC GAMES', 'FOOTBALL', 'TENNIS', 'CHESS',
+        'FORMULA ONE', 'BOLLYWOOD', 'HOLLYWOOD', 'WALT DISNEY', 'STAR WARS', 'HARRY POTTER',
+        'THE BEATLES', 'MICHAEL JACKSON', 'TAYLOR SWIFT', 'MARIO', 'POKEMON', 'MINECRAFT',
+        'YOUTUBE', 'NETFLIX', 'INSTAGRAM', 'WIKIPEDIA', 'ARTIFICIAL INTELLIGENCE',
+        'BLOCKCHAIN', 'QUANTUM COMPUTING', 'ELECTRICITY', 'GRAVITY', 'BLACK HOLE', 'DNA',
+        'VACCINE', 'VOLCANO', 'EARTHQUAKE', 'AMAZON RAINFOREST', 'GREAT BARRIER REEF',
+        'SAHARA', 'NILE', 'GANGES', 'HIMALAYAS', 'PARIS', 'TOKYO', 'NEW YORK CITY',
+        'SINGAPORE', 'DUBAI', 'ITALY', 'BRAZIL', 'EGYPT', 'AUSTRALIA', 'CHOCOLATE',
+        'SUSHI', 'MASALA DOSA', 'COCA-COLA', 'TITANIC', 'APOLLO 11',
+        'INTERNATIONAL SPACE STATION', 'MOBILE PHONE', 'WORLD WIDE WEB', 'UNITED NATIONS',
+        'RED CROSS', 'NOBEL PRIZE', 'FIFA', 'NBA', 'TOYOTA', 'TESLA', 'NIKE', 'ADIDAS',
+        'BARBIE', 'LEGO', 'NINTENDO', 'DISNEYLAND', 'SPONGEBOB SQUAREPANTS', 'BATMAN',
+        'SUPERMAN', 'SPIDER-MAN', 'SHREK', 'FROZEN', 'THE LION KING', 'JURASSIC PARK',
+        'AVATAR', 'MISSION IMPOSSIBLE', 'JAMES BOND', 'GUITAR', 'PIANO', 'DRUM', 'KARAOKE',
+        'COCONUT', 'MANGO', 'BANANA', 'BURGER', 'SANDWICH', 'ICE CREAM', 'CHOCOLATE CAKE',
+        'BIRYANI', 'DOSA', 'SAMOSA', 'POPCORN', 'TEA', 'COCA-COLA', "MCDONALD'S",
+        'STARBUCKS', 'AIRPLANE', 'RAILWAY', 'METRO', 'BICYCLE', 'MOTORCYCLE', 'TRAFFIC LIGHT',
+        'BRIDGE', 'SKYSCRAPER', 'PYRAMID', 'EIFFEL TOWER', 'STATUE OF LIBERTY',
+        'GOLDEN GATE BRIDGE', 'GREAT WALL OF CHINA', 'MACHU PICCHU', 'NIAGARA FALLS',
+        'ANTARCTICA', 'MOON', 'MARS', 'JUPITER', 'SATURN', 'RAINBOW', 'LIGHTNING',
+        'OCEAN', 'DESERT', 'FOREST', 'PANDA', 'DOLPHIN', 'PENGUIN', 'ELEPHANT', 'TIGER',
+        'OCTOPUS', 'BUTTERFLY', 'DINOSAUR', 'GIRAFFE', 'KOALA', 'CAMEL', 'PEACOCK',
+        'PHOTOGRAPHY', 'CINEMA', 'ANIMATION', 'COMIC BOOK', 'BOARD GAME', "RUBIK'S CUBE",
     ],
 };
 
@@ -130,6 +141,21 @@ const SAMPLE_WORDLES: WordlePuzzle[] = [
     { id: 'w31', number: 31, targetWord: 'STRATEGY', definition: 'A long-term plan designed to achieve a particular objective.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
     { id: 'w32', number: 32, targetWord: 'REVENUE', definition: 'The total income generated from normal business activities.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
     { id: 'w33', number: 33, targetWord: 'SUPPLY', definition: 'The amount of a product or service available to the market.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w34', number: 34, targetWord: 'MODEL', definition: 'A simplified representation used to explain or predict something.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w35', number: 35, targetWord: 'INPUT', definition: 'Data or information supplied to a system.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w36', number: 36, targetWord: 'OUTPUT', definition: 'The result produced by a process or system.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w37', number: 37, targetWord: 'TABLE', definition: 'Data arranged in rows and columns.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w38', number: 38, targetWord: 'EMAIL', definition: 'A message sent electronically over a network.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w39', number: 39, targetWord: 'LOGIN', definition: 'The process of accessing an account.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w40', number: 40, targetWord: 'TOKEN', definition: 'A unit of text processed by a language model.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w41', number: 41, targetWord: 'LOGIC', definition: 'Rules used to reason or reach a conclusion.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w42', number: 42, targetWord: 'TREND', definition: 'A general direction in which something changes.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w43', number: 43, targetWord: 'PIVOT', definition: 'To reorganise data around selected fields in a table.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w44', number: 44, targetWord: 'PYTHON', definition: 'A widely used programming language named after a comedy group.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w45', number: 45, targetWord: 'FORECAST', definition: 'A prediction of a future value or event.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w46', number: 46, targetWord: 'DASHBOARD', definition: 'A screen that brings important metrics together.', difficulty: 'hard', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w47', number: 47, targetWord: 'SEGMENT', definition: 'A distinct group within a larger dataset or market.', difficulty: 'medium', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
+    { id: 'w48', number: 48, targetWord: 'SERVER', definition: 'A computer or program that provides services to other devices.', difficulty: 'easy', isCompleted: false, guesses: [], discoveredGreenIndices: [], discoveredLetters: [], startingTeamIndex: 0 },
 ];
 
 interface GameActions {
@@ -305,6 +331,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         parsed.wordleCountCompleted = 0;
                     }
                     // Upgrade only the previous built-in Wiki Race bank; preserve any custom bank.
+                    // Upgrade the previous shipped default pools, but leave user-edited pools untouched.
+                    if (parsed.config?.startingWordPool?.length === 25 && parsed.config.startingWordPool.includes('CLIMATE CHANGE') && parsed.config.startingWordPool.includes('SPACE EXPLORATION')) {
+                        parsed.config = { ...parsed.config, startingWordPool: DEFAULT_CONFIG.startingWordPool };
+                    }
+                    if (parsed.config?.auctionWordPool?.length < 100 && parsed.config?.auctionWordPool?.includes('HARRY POTTER') && parsed.config?.auctionWordPool?.includes('QUANTUM COMPUTING')) {
+                        parsed.config = { ...parsed.config, auctionWordPool: DEFAULT_CONFIG.auctionWordPool };
+                    }
                     if (parsed.config && Array.isArray(parsed.config.startingWordPool) &&
                         (JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(LEGACY_STARTING_WORD_POOL) ||
                             JSON.stringify(parsed.config.startingWordPool) === JSON.stringify(PREVIOUS_DEFAULT_STARTING_WORD_POOL) ||
@@ -331,8 +364,8 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                     parsed.round1ModeByTeam = parsed.round1ModeByTeam ?? {};
                     parsed.roundTimerStartedAt = parsed.roundTimerStartedAt ?? null;
                     parsed.roundTimerPhase = parsed.roundTimerPhase ?? 'idle';
-                    // Extend the built-in 18-puzzle bank with the new 15 puzzles while preserving played progress.
-                    if (Array.isArray(parsed.wordles) && parsed.wordles.length === 18 &&
+                    // Extend any untouched built-in Wordle bank while preserving played puzzles and custom additions.
+                    if (Array.isArray(parsed.wordles) && parsed.wordles.length < SAMPLE_WORDLES.length &&
                         parsed.wordles.every((puzzle: WordlePuzzle, index: number) => puzzle.targetWord === SAMPLE_WORDLES[index]?.targetWord)) {
                         const existingIds = new Set(parsed.wordles.map((puzzle: WordlePuzzle) => puzzle.id));
                         parsed.wordles = [...parsed.wordles, ...SAMPLE_WORDLES.filter((puzzle) => !existingIds.has(puzzle.id))];
@@ -350,6 +383,12 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                             ...puzzle,
                             difficulty: puzzle.difficulty ?? 'medium',
                         }));
+                    }
+                    // Add the five new built-in guesstimates to an untouched original 25-question board.
+                    if (Array.isArray(parsed.jeopardyBoard) && parsed.jeopardyBoard.length === 25 &&
+                        parsed.jeopardyBoard.every((question: JeopardyQuestion, index: number) => question.id === `j${index + 1}`)) {
+                        const existingIds = new Set(parsed.jeopardyBoard.map((question: JeopardyQuestion) => question.id));
+                        parsed.jeopardyBoard = [...parsed.jeopardyBoard, ...SAMPLE_JEOPARDY.filter((question) => !existingIds.has(question.id))];
                     }
                     // Replace the previous shipped Jeopardy questionnaire while preserving custom boards.
                     if (Array.isArray(parsed.jeopardyBoard) &&
