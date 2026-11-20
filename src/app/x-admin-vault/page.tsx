@@ -184,7 +184,7 @@ export default function AdminVaultPage() {
                             {store.jeopardyBoard.map((q) => (
                                 <button
                                     key={q.id}
-                                    disabled={jeopardyLocked}
+                                    disabled={jeopardyLocked || q.isCompleted || Boolean(activeQuestion)}
                                     onClick={() => {
                                         store.setView('JEOPARDY');
                                         store.selectJeopardyTile(q.id);
@@ -206,7 +206,7 @@ export default function AdminVaultPage() {
                         {activeQuestion && (
                             <div className="bg-slate-950 border border-indigo-500 rounded-xl p-4">
                                 <div className="text-sm font-bold text-amber-400 mb-1">
-                                    FULL CREDIT ±{25 + (Math.max(1, Math.min(5, Math.round(activeQuestion.points / 100))) - 1) * 5}% · HALF CREDIT ±{50 + (Math.max(1, Math.min(5, Math.round(activeQuestion.points / 100))) - 1) * 5}%
+                                    FULL CREDIT BAND: {activeQuestion.minLimit.toLocaleString()}–{activeQuestion.maxLimit.toLocaleString()} {activeQuestion.unit}
                                 </div>
                                 <div className="text-xs text-slate-400 mb-3">
                                     Ballpark answer: {activeQuestion.actualAnswer.toLocaleString()} {activeQuestion.unit}

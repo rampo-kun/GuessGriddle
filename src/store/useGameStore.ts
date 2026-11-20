@@ -14,7 +14,7 @@ import {
 import { evaluateWordleGuess, getWordleMaxPoints } from '@/utils/wordleLogic';
 import { SAMPLE_JEOPARDY } from '@/data/jeopardyQuestions';
 
-const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
+const STORAGE_KEY = 'guessgriddle_xinsights_state_v5';
 const CHANNEL_NAME = 'guessgriddle_sync_channel';
 
 const DEFAULT_CONFIG: GameConfig = {
@@ -309,10 +309,17 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             // three-word starter bank with the expanded variable-length bank.
             const raw =
                 localStorage.getItem(STORAGE_KEY) ??
+                localStorage.getItem('guessgriddle_xinsights_state_v4') ??
                 localStorage.getItem('guessgriddle_xinsights_state_v3');
             if (raw) {
                 try {
                     const parsed = JSON.parse(raw);
+                    // Always use the newly supplied 42-question bank and its matching
+                    // answer ranges; never retain stale/custom questions or old point keys.
+                    parsed.jeopardyBoard = [...SAMPLE_JEOPARDY];
+                    parsed.activeJeopardyId = null;
+                    parsed.lastGuesstimateResult = null;
+                    parsed.jeopardyTurnIndex = 0;
                     if (Array.isArray(parsed.wordles)) {
                         parsed.wordles = parsed.wordles.map((w: WordlePuzzle) => {
                             const legacy = Array.isArray(w.guesses) &&
@@ -390,15 +397,9 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
                         const existingIds = new Set(parsed.jeopardyBoard.map((question: JeopardyQuestion) => question.id));
                         parsed.jeopardyBoard = [...parsed.jeopardyBoard, ...SAMPLE_JEOPARDY.filter((question) => !existingIds.has(question.id))];
                     }
-                    // Replace the previous shipped Jeopardy questionnaire while preserving custom boards.
-                    if (Array.isArray(parsed.jeopardyBoard) &&
-                        parsed.jeopardyBoard.some((question: JeopardyQuestion) => question.isImageQuestion || question.id.startsWith('image-') || (question.id === 'j1' && question.category === 'SPORTS'))) {
-                        parsed.jeopardyBoard = [...SAMPLE_JEOPARDY];
-                        parsed.activeJeopardyId = null;
-                        parsed.lastGuesstimateResult = null;
-                    }
                     parsed.teams = Array.isArray(parsed.teams) ? parsed.teams.map((team: Team) => ({ ...team, visitedWords: team.visitedWords ?? [] })) : parsed.teams;
                     set((prev) => ({ ...prev, ...parsed }));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...get(), ...parsed }));
                 } catch { }
             }
             const channel = new BroadcastChannel(CHANNEL_NAME);
@@ -478,8 +479,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
 
         selectJeopardyTile: (id) =>
             commit((s) => {
-                // A team cannot start a third Jeopardy turn in a row.
-                if (id && isRound1ModeLocked(s.round1ModeByTeam, s.teams[s.jeopardyTurnIndex]?.id, 'JEOPARDY')) return {};
+                // Reject stale, already-played tiles and duplicate selections.
+                if (id) {
+                    const question = s.jeopardyBoard.find((item) => item.id === id);
+                    if (!question || question.isCompleted || s.activeJeopardyId) return {};
+                    // A team cannot start a third Jeopardy turn in a row.
+                    if (isRound1ModeLocked(s.round1ModeByTeam, s.teams[s.jeopardyTurnIndex]?.id, 'JEOPARDY')) return {};
+                }
                 return {
                     activeJeopardyId: id,
                     lastGuesstimateResult: null,
@@ -492,22 +498,13 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
             commit((s) => {
                 const q = s.jeopardyBoard.find((item) => item.id === s.activeJeopardyId);
                 const currentTeam = s.teams[s.jeopardyTurnIndex];
-                if (!q || !currentTeam) return {};
+                if (!q || !currentTeam || s.lastGuesstimateResult || q.isCompleted) return {};
 
-                // Error tolerance grows with tile difficulty (100 to 500).
-                // Full credit: 25%, 30%, 35%, 40%, 45%; half credit: 50%-70%.
-                const level = Math.max(1, Math.min(5, Math.round(q.points / 100)));
-                const fullTolerance = 0.25 + (level - 1) * 0.05;
-                const halfTolerance = 0.50 + (level - 1) * 0.05;
-                const errorRate = q.actualAnswer === 0
-                    ? (guess === 0 ? 0 : Infinity)
-                    : Math.abs(guess - q.actualAnswer) / Math.abs(q.actualAnswer);
-                const awarded = errorRate <= fullTolerance
-                    ? q.points
-                    : errorRate <= halfTolerance
-                        ? Math.round(q.points / 2)
-                        : 0;
-                const won = awarded > 0;
+                // Award the tile's full value only inside the exact tolerance band
+                // supplied for that point level in the question-bank document.
+                const validGuess = Number.isFinite(guess) && guess >= 0;
+                const won = validGuess && guess >= q.minLimit && guess <= q.maxLimit;
+                const awarded = won ? q.points : 0;
 
                 const updatedTeams = s.teams.map((t) =>
                     t.id === currentTeam.id ? { ...t, score: t.score + awarded } : t
