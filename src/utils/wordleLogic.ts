@@ -1,3 +1,14 @@
+export type WordleDifficultyLevel = 'easy' | 'medium' | 'hard';
+
+export function getWordleMaxPoints(difficulty: WordleDifficultyLevel): number {
+    switch (difficulty) {
+        case 'easy': return 150;
+        case 'hard': return 300;
+        case 'medium':
+        default: return 220;
+    }
+}
+
 export type WordleTileStatus = 'correct' | 'present' | 'absent';
 
 export interface WordleEvaluation {

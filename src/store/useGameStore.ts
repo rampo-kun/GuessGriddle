@@ -11,7 +11,7 @@ import {
     Team,
     WordlePuzzle,
 } from '@/types/game';
-import { evaluateWordleGuess } from '@/utils/wordleLogic';
+import { evaluateWordleGuess, getWordleMaxPoints } from '@/utils/wordleLogic';
 import { SAMPLE_JEOPARDY } from '@/data/jeopardyQuestions';
 
 const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
@@ -622,21 +622,20 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
 
                 // Only the winning attempt scores. Earlier guesses are feedback-only,
                 // so discovering letters across multiple attempts never accumulates points.
-                const greenPoints = Math.max(0, s.config.wordleNewGreenPoints);
-                const yellowPoints = Math.max(0, s.config.wordleNewYellowPoints);
-                // The first guess earns the full base value. Each later winning
-                // guess earns one fewer fraction of that value (e.g. 6 guesses:
-                // 100%, 83%, 67%, 50%, 33%, 17%). Failed guesses always earn 0.
+                // Each difficulty has one fixed maximum reward, independent of
+                // answer length. Later successful guesses receive a linear
+                // reduction; failed guesses always earn zero.
                 const attemptNumber = puzzle.guesses.length + 1;
                 const maxGuesses = Math.max(1, s.config.wordleMaxGuesses);
                 const attemptMultiplier = Math.max(0, (maxGuesses - attemptNumber + 1) / maxGuesses);
-                const pointsByLetter = result.statuses.map((status) => {
-                    if (!result.solved) return 0;
-                    if (status === 'correct') return Math.round(greenPoints * attemptMultiplier);
-                    if (status === 'present') return Math.round(yellowPoints * attemptMultiplier);
-                    return 0;
-                });
-                const pointsEarned = pointsByLetter.reduce((sum, points) => sum + points, 0);
+                const baseReward = getWordleMaxPoints(puzzle.difficulty ?? 'medium');
+                const pointsEarned = result.solved ? Math.round(baseReward * attemptMultiplier) : 0;
+                // Keep per-tile point data consistent with the awarded total;
+                // distribute any remainder across the earliest tiles.
+                const pointsByLetter = result.statuses.map((_, index) =>
+                    Math.floor(pointsEarned / result.statuses.length) +
+                    (index < (pointsEarned % result.statuses.length) ? 1 : 0)
+                );
                 const updatedGuesses = [...puzzle.guesses, {
                     teamId: activeTeam.id,
                     word: normalizedWord,

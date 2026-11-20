@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useGameStore, isRound1ModeLocked } from '@/store/useGameStore';
 import { ActiveView } from '@/types/game';
+import { getWordleMaxPoints } from '@/utils/wordleLogic';
 
 export default function AdminVaultPage() {
     const store = useGameStore();
@@ -291,7 +292,7 @@ export default function AdminVaultPage() {
                                     <div>
                                         <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
-                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
+                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Maximum reward: {getWordleMaxPoints(activeWordle.difficulty ?? 'medium')} pts</p>
                                     </div>
                                     {activeWordle.isCompleted ? (
                                         <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2 rounded font-black">Reveal Result Shown · Next Team</button>
@@ -532,14 +533,10 @@ export default function AdminVaultPage() {
                                     className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
                                 />
                             </label>
-                            <label className="text-xs">
-                                Wordle Green Letter Points
-                                <input type="number" min="1" value={store.config.wordleNewGreenPoints} onChange={(e) => store.updateConfig({ wordleNewGreenPoints: Math.max(1, Number(e.target.value) || 25) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
-                            </label>
-                            <label className="text-xs">
-                                Wordle Yellow Letter Points
-                                <input type="number" min="1" value={store.config.wordleNewYellowPoints} onChange={(e) => store.updateConfig({ wordleNewYellowPoints: Math.max(1, Number(e.target.value) || 12) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
-                            </label>
+                            <div className="col-span-2 rounded-lg border border-slate-700 bg-slate-950/60 p-3 text-xs text-slate-300">
+                                <p className="font-bold text-emerald-300">Fixed difficulty rewards</p>
+                                <p>Easy: 150 pts · Medium: 220 pts · Hard: 300 pts. These caps apply to every puzzle, regardless of answer length.</p>
+                            </div>
                             <label className="text-xs">
                                 R2 Buy Cost
                                 <input

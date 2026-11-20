@@ -1,0 +1,128 @@
+diff --git a/src/app/x-admin-vault/page.tsx b/src/app/x-admin-vault/page.tsx
+index 2cadd55..4d422dd 100644
+--- a/src/app/x-admin-vault/page.tsx
++++ b/src/app/x-admin-vault/page.tsx
+@@ -3,6 +3,7 @@
+ import { useEffect, useState } from 'react';
+ import { useGameStore, isRound1ModeLocked } from '@/store/useGameStore';
+ import { ActiveView } from '@/types/game';
++import { getWordleMaxPoints } from '@/utils/wordleLogic';
+ 
+ export default function AdminVaultPage() {
+     const store = useGameStore();
+@@ -291,7 +292,7 @@ export default function AdminVaultPage() {
+                                     <div>
+                                         <p className="text-xs uppercase tracking-widest text-emerald-300">Playing team</p>
+                                         <p className="text-xl font-black">{activeWordleTeam?.name ?? 'Team removed'} · {activeWordle.difficulty ?? 'medium'}</p>
+-                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Only a solved guess scores; points decrease after each attempt</p>
++                                        <p className="text-xs text-slate-400">Guess {activeWordle.guesses.length + 1} of {store.config.wordleMaxGuesses} · Maximum reward: {getWordleMaxPoints(activeWordle.difficulty ?? 'medium')} pts</p>
+                                     </div>
+                                     {activeWordle.isCompleted ? (
+                                         <button onClick={() => store.closeWordleAsComplete()} className="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2 rounded font-black">Reveal Result Shown · Next Team</button>
+@@ -532,14 +533,10 @@ export default function AdminVaultPage() {
+                                     className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2"
+                                 />
+                             </label>
+-                            <label className="text-xs">
+-                                Wordle Green Letter Points
+-                                <input type="number" min="1" value={store.config.wordleNewGreenPoints} onChange={(e) => store.updateConfig({ wordleNewGreenPoints: Math.max(1, Number(e.target.value) || 25) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
+-                            </label>
+-                            <label className="text-xs">
+-                                Wordle Yellow Letter Points
+-                                <input type="number" min="1" value={store.config.wordleNewYellowPoints} onChange={(e) => store.updateConfig({ wordleNewYellowPoints: Math.max(1, Number(e.target.value) || 12) })} className="w-full mt-1 bg-slate-950 border border-slate-700 rounded p-2" />
+-                            </label>
++                            <div className="col-span-2 rounded-lg border border-slate-700 bg-slate-950/60 p-3 text-xs text-slate-300">
++                                <p className="font-bold text-emerald-300">Fixed difficulty rewards</p>
++                                <p>Easy: 150 pts · Medium: 220 pts · Hard: 300 pts. These caps apply to every puzzle, regardless of answer length.</p>
++                            </div>
+                             <label className="text-xs">
+                                 R2 Buy Cost
+                                 <input
+diff --git a/src/components/projector/WordleBoard.tsx b/src/components/projector/WordleBoard.tsx
+index 32ea32c..9d7a02d 100644
+--- a/src/components/projector/WordleBoard.tsx
++++ b/src/components/projector/WordleBoard.tsx
+@@ -3,6 +3,7 @@
+ import { useGameStore } from '@/store/useGameStore';
+ import RoundTimer from '@/components/projector/RoundTimer';
+ import ProjectorStage from '@/components/projector/ProjectorStage';
++import { getWordleMaxPoints } from '@/utils/wordleLogic';
+ 
+ /**
+  * Wordle projector screen, laid out on the fixed 1920x1080 stage (see
+@@ -26,8 +27,8 @@ export default function WordleBoard() {
+     const maxGuesses = config.wordleMaxGuesses ?? 6;
+     const difficulty = puzzle.difficulty ?? 'medium';
+     const letterCount = puzzle.targetWord.length;
+-    // Only a solved guess scores. The available score decreases with each attempt; failed guesses earn zero.
+-    const pointsCap = letterCount * Math.max(0, config.wordleNewGreenPoints);
++    // Fixed category cap: independent of the answer's letter count.
++    const pointsCap = getWordleMaxPoints(difficulty);
+     const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
+ 
+     // Largest square tile that fits both the width and the height budget.
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index f540993..1c6c92d 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -11,7 +11,7 @@ import {
+     Team,
+     WordlePuzzle,
+ } from '@/types/game';
+-import { evaluateWordleGuess } from '@/utils/wordleLogic';
++import { evaluateWordleGuess, getWordleMaxPoints } from '@/utils/wordleLogic';
+ import { SAMPLE_JEOPARDY } from '@/data/jeopardyQuestions';
+ 
+ const STORAGE_KEY = 'guessgriddle_xinsights_state_v4';
+@@ -622,21 +622,20 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+ 
+                 // Only the winning attempt scores. Earlier guesses are feedback-only,
+                 // so discovering letters across multiple attempts never accumulates points.
+-                const greenPoints = Math.max(0, s.config.wordleNewGreenPoints);
+-                const yellowPoints = Math.max(0, s.config.wordleNewYellowPoints);
+-                // The first guess earns the full base value. Each later winning
+-                // guess earns one fewer fraction of that value (e.g. 6 guesses:
+-                // 100%, 83%, 67%, 50%, 33%, 17%). Failed guesses always earn 0.
++                // Each difficulty has one fixed maximum reward, independent of
++                // answer length. Later successful guesses receive a linear
++                // reduction; failed guesses always earn zero.
+                 const attemptNumber = puzzle.guesses.length + 1;
+                 const maxGuesses = Math.max(1, s.config.wordleMaxGuesses);
+                 const attemptMultiplier = Math.max(0, (maxGuesses - attemptNumber + 1) / maxGuesses);
+-                const pointsByLetter = result.statuses.map((status) => {
+-                    if (!result.solved) return 0;
+-                    if (status === 'correct') return Math.round(greenPoints * attemptMultiplier);
+-                    if (status === 'present') return Math.round(yellowPoints * attemptMultiplier);
+-                    return 0;
+-                });
+-                const pointsEarned = pointsByLetter.reduce((sum, points) => sum + points, 0);
++                const baseReward = getWordleMaxPoints(puzzle.difficulty ?? 'medium');
++                const pointsEarned = result.solved ? Math.round(baseReward * attemptMultiplier) : 0;
++                // Keep per-tile point data consistent with the awarded total;
++                // distribute any remainder across the earliest tiles.
++                const pointsByLetter = result.statuses.map((_, index) =>
++                    Math.floor(pointsEarned / result.statuses.length) +
++                    (index < (pointsEarned % result.statuses.length) ? 1 : 0)
++                );
+                 const updatedGuesses = [...puzzle.guesses, {
+                     teamId: activeTeam.id,
+                     word: normalizedWord,
+diff --git a/src/utils/wordleLogic.ts b/src/utils/wordleLogic.ts
+index 5988ebb..7353b4c 100644
+--- a/src/utils/wordleLogic.ts
++++ b/src/utils/wordleLogic.ts
+@@ -1,3 +1,14 @@
++export type WordleDifficultyLevel = 'easy' | 'medium' | 'hard';
++
++export function getWordleMaxPoints(difficulty: WordleDifficultyLevel): number {
++    switch (difficulty) {
++        case 'easy': return 150;
++        case 'hard': return 300;
++        case 'medium':
++        default: return 220;
++    }
++}
++
+ export type WordleTileStatus = 'correct' | 'present' | 'absent';
+ 
+ export interface WordleEvaluation {

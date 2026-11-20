@@ -3,6 +3,7 @@
 import { useGameStore } from '@/store/useGameStore';
 import RoundTimer from '@/components/projector/RoundTimer';
 import ProjectorStage from '@/components/projector/ProjectorStage';
+import { getWordleMaxPoints } from '@/utils/wordleLogic';
 
 /**
  * Wordle projector screen, laid out on the fixed 1920x1080 stage (see
@@ -26,8 +27,8 @@ export default function WordleBoard() {
     const maxGuesses = config.wordleMaxGuesses ?? 6;
     const difficulty = puzzle.difficulty ?? 'medium';
     const letterCount = puzzle.targetWord.length;
-    // Only a solved guess scores. The available score decreases with each attempt; failed guesses earn zero.
-    const pointsCap = letterCount * Math.max(0, config.wordleNewGreenPoints);
+    // Fixed category cap: independent of the answer's letter count.
+    const pointsCap = getWordleMaxPoints(difficulty);
     const totalPuzzlePoints = puzzle.guesses.reduce((sum, guess) => sum + guess.pointsEarned, 0);
 
     // Largest square tile that fits both the width and the height budget.

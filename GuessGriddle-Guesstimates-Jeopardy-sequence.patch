@@ -1,0 +1,79 @@
+diff --git a/src/components/projector/JeopardyView.tsx b/src/components/projector/JeopardyView.tsx
+index 93280bb..eaea4ef 100644
+--- a/src/components/projector/JeopardyView.tsx
++++ b/src/components/projector/JeopardyView.tsx
+@@ -77,7 +77,7 @@ export default function JeopardyView() {
+                                             Completed
+                                         </span>
+                                     ) : (
+-                                        <span className="text-5xl font-black">{q.points}</span>
++                                        <span className="text-[clamp(1.15rem,2.5vw,2.75rem)] font-black tabular-nums">{q.points}</span>
+                                     )}
+                                 </div>
+                             ))}
+diff --git a/src/data/jeopardyQuestions.ts b/src/data/jeopardyQuestions.ts
+index 67b1d31..8a15149 100644
+--- a/src/data/jeopardyQuestions.ts
++++ b/src/data/jeopardyQuestions.ts
+@@ -28,9 +28,20 @@ export const SAMPLE_JEOPARDY: JeopardyQuestion[] = [
+     { id: "j24", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 400, question: "How many delivery riders would Swiggy and Zomato collectively need to fulfil 10,000 food orders in Bengaluru during peak dinner hours?", actualAnswer: 1500.0, minLimit: 1000.0, maxLimit: 2000.0, unit: "riders", isCompleted: false },
+     { id: "j25", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 500, question: "If a shopping mall has 100 stores and each store generates an average daily sale of ₹50,000, what would be the mall's collective annual sales?", actualAnswer: 175.0, minLimit: 150.0, maxLimit: 200.0, unit: "₹ crore", isCompleted: false },
+ 
+-    { id: "j26", category: "CAMPUS & B-SCHOOL LIFE", points: 100, question: "How many cups of coffee would 300 students drink in total if each student had 2 cups a day for 5 days?", actualAnswer: 3000, minLimit: 2400, maxLimit: 3600, unit: "cups", isCompleted: false },
+-    { id: "j27", category: "POP CULTURE, FOOD & EVERYDAY INDIA", points: 200, question: "How many slices of pizza are needed for 250 people if each person eats an average of 2 slices?", actualAnswer: 500, minLimit: 400, maxLimit: 600, unit: "slices", isCompleted: false },
+-    { id: "j28", category: "BIG TECH & DIGITAL SCALE", points: 300, question: "If 500 students each watch 15 short videos of 30 seconds, how many total hours of video are watched?", actualAnswer: 62.5, minLimit: 50, maxLimit: 75, unit: "hours", isCompleted: false },
+-    { id: "j29", category: "DATA, AI & CLOUD ECONOMICS", points: 400, question: "A dataset has 80,000 rows and each row averages 2 KB. Approximately how large is the dataset?", actualAnswer: 160, minLimit: 120, maxLimit: 200, unit: "MB", isCompleted: false },
+-    { id: "j30", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 500, question: "An online store gets 12,000 visitors in a day and 3% place an order. How many orders does it receive?", actualAnswer: 360, minLimit: 300, maxLimit: 420, unit: "orders", isCompleted: false },
++    { id: "j26", category: "FUN & EVERYDAY GUESSTIMATES", points: 100, question: "How many cups of coffee would 300 students drink in total if each student had 2 cups a day for 5 days?", actualAnswer: 3000, minLimit: 2400, maxLimit: 3600, unit: "cups", isCompleted: false },
++    { id: "j27", category: "FUN & EVERYDAY GUESSTIMATES", points: 200, question: "How many slices of pizza are needed for 250 people if each person eats an average of 2 slices?", actualAnswer: 500, minLimit: 400, maxLimit: 600, unit: "slices", isCompleted: false },
++    { id: "j28", category: "FUN & EVERYDAY GUESSTIMATES", points: 300, question: "If 500 students each watch 15 short videos of 30 seconds, how many total hours of video are watched?", actualAnswer: 62.5, minLimit: 50, maxLimit: 75, unit: "hours", isCompleted: false },
++    { id: "j29", category: "FUN & EVERYDAY GUESSTIMATES", points: 400, question: "A dataset has 80,000 rows and each row averages 2 KB. Approximately how large is the dataset?", actualAnswer: 160, minLimit: 120, maxLimit: 200, unit: "MB", isCompleted: false },
++    { id: "j30", category: "FUN & EVERYDAY GUESSTIMATES", points: 500, question: "An online store gets 12,000 visitors in a day and 3% place an order. How many orders does it receive?", actualAnswer: 360, minLimit: 300, maxLimit: 420, unit: "orders", isCompleted: false },
++
++    { id: "j31", category: "FUN & EVERYDAY GUESSTIMATES", points: 600, question: "If every person at a 2,000-person music festival takes an average of 3 photos, how many photos are taken altogether?", actualAnswer: 6000, minLimit: 4500, maxLimit: 7500, unit: "photos", isCompleted: false },
++    { id: "j32", category: "FUN & EVERYDAY GUESSTIMATES", points: 700, question: "How many standard 500 ml water bottles would be needed to provide 1.5 litres of water to each of 800 marathon participants?", actualAnswer: 2400, minLimit: 2000, maxLimit: 2800, unit: "bottles", isCompleted: false },
++    { id: "j33", category: "FUN & EVERYDAY GUESSTIMATES", points: 800, question: "A movie theatre has 8 screens with 180 seats each. If every show runs 4 times a day at 75% occupancy, approximately how many tickets are sold daily?", actualAnswer: 4320, minLimit: 3500, maxLimit: 5100, unit: "tickets", isCompleted: false },
++    { id: "j34", category: "FUN & EVERYDAY GUESSTIMATES", points: 900, question: "If 250 students each order 2 plates of momos for a fest, and each plate contains 8 momos, how many momos are needed?", actualAnswer: 4000, minLimit: 3200, maxLimit: 4800, unit: "momos", isCompleted: false },
++    { id: "j35", category: "FUN & EVERYDAY GUESSTIMATES", points: 1000, question: "A college fest runs 6 hours. If a DJ plays a new 3-minute track each time, approximately how many complete tracks can fit in the event?", actualAnswer: 120, minLimit: 105, maxLimit: 135, unit: "tracks", isCompleted: false },
++    { id: "j36", category: "CAMPUS & B-SCHOOL LIFE", points: 600, question: "If 400 students each print an average of 18 pages in a month, how many pages are printed altogether?", actualAnswer: 7200, minLimit: 6000, maxLimit: 8400, unit: "pages", isCompleted: false },
++    { id: "j37", category: "POP CULTURE, FOOD & EVERYDAY INDIA", points: 600, question: "A food truck serves 45 customers per hour for 7 hours. If each customer buys an average of 1.4 items, how many items are sold?", actualAnswer: 441, minLimit: 360, maxLimit: 520, unit: "items", isCompleted: false },
++    { id: "j38", category: "BIG TECH & DIGITAL SCALE", points: 600, question: "If 1,200 users each stream 2 hours of video per day for 30 days, how many total hours of video are streamed?", actualAnswer: 72000, minLimit: 60000, maxLimit: 84000, unit: "hours", isCompleted: false },
++    { id: "j39", category: "DATA, AI & CLOUD ECONOMICS", points: 600, question: "A team analyses 15,000 survey responses. If each response has 12 fields, how many individual data values are in the dataset?", actualAnswer: 180000, minLimit: 150000, maxLimit: 210000, unit: "data values", isCompleted: false },
++    { id: "j40", category: "BUSINESS & E-COMMERCE ANALYTICS", points: 600, question: "An online store receives 8,000 visits in a day. If 4% convert and the average order value is ₹750, what is the approximate daily revenue?", actualAnswer: 240000, minLimit: 200000, maxLimit: 280000, unit: "₹", isCompleted: false },
+ ];
+diff --git a/src/store/useGameStore.ts b/src/store/useGameStore.ts
+index f540993..6b33e4a 100644
+--- a/src/store/useGameStore.ts
++++ b/src/store/useGameStore.ts
+@@ -384,11 +384,26 @@ export const useGameStore = create<GameState & GameActions>((set, get) => {
+                             difficulty: puzzle.difficulty ?? 'medium',
+                         }));
+                     }
+-                    // Add the five new built-in guesstimates to an untouched original 25-question board.
+-                    if (Array.isArray(parsed.jeopardyBoard) && parsed.jeopardyBoard.length === 25 &&
+-                        parsed.jeopardyBoard.every((question: JeopardyQuestion, index: number) => question.id === `j${index + 1}`)) {
+-                        const existingIds = new Set(parsed.jeopardyBoard.map((question: JeopardyQuestion) => question.id));
+-                        parsed.jeopardyBoard = [...parsed.jeopardyBoard, ...SAMPLE_JEOPARDY.filter((question) => !existingIds.has(question.id))];
++                    // Refresh only the shipped built-in Jeopardy bank, preserving completion state.
++                    // Custom boards (identified by non-built-in IDs) are left untouched.
++                    if (Array.isArray(parsed.jeopardyBoard) &&
++                        parsed.jeopardyBoard.every((question: JeopardyQuestion) => /^j\d+$/.test(question.id))) {
++                        const previousQuestions = new Map(parsed.jeopardyBoard.map((question: JeopardyQuestion) => [question.id, question]));
++                        parsed.jeopardyBoard = SAMPLE_JEOPARDY.map((question) => {
++                            const previous = previousQuestions.get(question.id);
++                            return previous
++                                ? {
++                                    ...question,
++                                    question: previous.question ?? question.question,
++                                    actualAnswer: previous.actualAnswer ?? question.actualAnswer,
++                                    minLimit: previous.minLimit ?? question.minLimit,
++                                    maxLimit: previous.maxLimit ?? question.maxLimit,
++                                    unit: previous.unit ?? question.unit,
++                                    isCompleted: previous.isCompleted ?? false,
++                                    answeredByTeamId: previous.answeredByTeamId,
++                                }
++                                : question;
++                        });
+                     }
+                     // Replace the previous shipped Jeopardy questionnaire while preserving custom boards.
+                     if (Array.isArray(parsed.jeopardyBoard) &&
